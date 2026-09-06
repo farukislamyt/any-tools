@@ -54,11 +54,11 @@ For publishers who prefer one small script tag, AnyTools provides `/embed.js`. I
 </script>
 ```
 
-The helper validates both the iframe `contentWindow` and the iframe origin before applying resize messages. The widget also derives a specific parent origin from `document.referrer` when available instead of always broadcasting resize messages to `*`. This follows the browser security guidance for `postMessage`. citeturn0search0turn0search6
+The helper validates both the iframe `contentWindow` and the iframe origin before applying resize messages. The widget also derives a specific parent origin from `document.referrer` when available instead of always broadcasting resize messages to `*`.
 
 ## WordPress / Webflow / Wix / Squarespace
 
-Use a **Custom HTML**, **Embed**, or equivalent HTML block and paste either the iframe or script snippet. The iframe method is the most portable because cross-origin iframe communication is explicitly supported through `postMessage`. citeturn0search1
+Use a **Custom HTML**, **Embed**, or equivalent HTML block and paste either the iframe or script snippet. The iframe method is the most portable because cross-origin iframe communication is explicitly supported through `postMessage`.
 
 ## Recommended production architecture
 
@@ -69,11 +69,11 @@ Use a **Custom HTML**, **Embed**, or equivalent HTML block and paste either the 
 5. Use `postMessage` for optional height synchronization.
 6. If a paid white-label tier is introduced, authenticate usage server-side with an embed token or account ID. Never put a secret API key in browser JavaScript.
 7. Keep the normal calculator page canonical and mark embed routes `noindex`.
-8. For production hardening, use CSP `frame-ancestors` if AnyTools later needs to restrict which publisher origins may embed a particular widget. citeturn0search12
+8. For production hardening, use CSP `frame-ancestors` if AnyTools later needs to restrict which publisher origins may embed a particular widget.
 
 ## Why iframe first
 
-An iframe isolates the calculator from the host site's CSS and JavaScript and works across unrelated websites. A JavaScript SDK can be added later for advanced callbacks, analytics, richer theming, and event APIs. Cross-origin pages cannot directly inspect each other's DOM, so `postMessage` is the standard browser mechanism for controlled communication. citeturn0search1turn0search4
+An iframe isolates the calculator from the host site's CSS and JavaScript and works across unrelated websites. A JavaScript SDK can be added later for advanced callbacks, analytics, richer theming, and event APIs. Cross-origin pages cannot directly inspect each other's DOM, so `postMessage` is the standard browser mechanism for controlled communication.
 
 ## Responsive host wrapper
 
