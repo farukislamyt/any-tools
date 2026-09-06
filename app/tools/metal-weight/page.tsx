@@ -5,6 +5,7 @@ import { ToolShell } from "@/components/tool-shell";
 import { sectionFamilies, steelSections } from "@/lib/steel-sections";
 import {
   calculateMetalWeightKg,
+  calculatePlateWeightKg,
   metalWeightUnits,
   shapeDefinitions,
   shapeOptions,
@@ -29,7 +30,7 @@ const materials = {
 
 const initialDimensions = (): DimensionState => ({
   diameter: { value: "25", unit: "mm" }, side: { value: "25", unit: "mm" },
-  width: { value: "50", unit: "mm" }, height: { value: "10", unit: "mm" },
+  width: { value: "50", unit: "mm" }, height: { value: "10", unit: "mm" }, length: { value: "1000", unit: "mm" },
   acrossCorners: { value: "25", unit: "mm" }, acrossFlats: { value: "25", unit: "mm" },
   outerDiameter: { value: "50", unit: "mm" }, wallThickness: { value: "2", unit: "mm" },
   sideA: { value: "50", unit: "mm" }, sideB: { value: "50", unit: "mm" }, depth: { value: "100", unit: "mm" },
@@ -74,10 +75,29 @@ export default function MetalWeightPage() {
     return { meters, pieces, pieceKg, totalKg: pieceKg * pieces };
   }, [standardLength, standardQuantity, selectedStandard]);
 
+  const normalizedDimensions = useMemo(() => Object.fromEntries(
+    Object.entries(dimensions).map(([key, state]) => [key, toMillimetres(state.value, state.unit)]),
+  ) as Partial<Record<DimensionKey, number>>, [dimensions]);
+
   const customResult = useMemo(() => {
-    const normalized = Object.fromEntries(Object.entries(dimensions).map(([key, state]) => [key, toMillimetres(state.value, state.unit)])) as Partial<Record<DimensionKey, number>>;
-    return calculateMetalWeightKg(shape, normalized, toMillimetres(customLength.value, customLength.unit), materials[material], Number(customQuantity));
-  }, [shape, dimensions, customLength, customQuantity, material]);
+    if (shape === "plate") {
+      return calculatePlateWeightKg(
+        normalizedDimensions.width ?? 0,
+        normalizedDimensions.length ?? 0,
+        normalizedDimensions.height ?? 0,
+        materials[material],
+        Number(customQuantity),
+      );
+    }
+
+    return calculateMetalWeightKg(
+      shape,
+      normalizedDimensions,
+      toMillimetres(customLength.value, customLength.unit),
+      materials[material],
+      Number(customQuantity),
+    );
+  }, [shape, normalizedDimensions, customLength, customQuantity, material]);
 
   const updateDimension = (key: DimensionKey, next: { value: string; unit: MetalWeightUnit }) => setDimensions(current => ({ ...current, [key]: next }));
   const reset = () => {
@@ -85,7 +105,7 @@ export default function MetalWeightPage() {
     setMaterial("Steel"); setShape("round"); setDimensions(initialDimensions()); setCustomLength({ value: "1000", unit: "mm" }); setCustomQuantity("1");
   };
 
-  return <ToolShell title="Metal Weight Calculator" description="Calculate metal weight with standard Indian rolled sections or flexible custom dimensions. Inputs change automatically for the selected shape." category="Engineering">
+  return <ToolShell title="Metal Weight Calculator" description="Calculate metal weight with standard Indian rolled sections or flexible custom dimensions. Sheet and plate mode uses width × length × thickness directly." category="Engineering">
     <div className="mb-4 border border-slate-200 bg-white p-1.5 shadow-sm"><div className="grid grid-cols-2 gap-1">
       <button type="button" onClick={() => setMode("standard")} className={`px-3 py-2 text-sm font-semibold transition ${mode === "standard" ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Standard steel sections</button>
       <button type="button" onClick={() => setMode("custom")} className={`px-3 py-2 text-sm font-semibold transition ${mode === "custom" ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Custom dimensions</button>
@@ -106,21 +126,21 @@ export default function MetalWeightPage() {
       <ResultCard title="Total estimated weight" totalKg={standardResult.totalKg} details={[["Section", selectedStandard?.designation ?? "—"], ["Piece weight", `${standardResult.pieceKg.toFixed(3)} kg`], ["Quantity", String(standardResult.pieces)]]} />
     </div> : <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
       <section className="border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-        <div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold text-slate-950">Custom dimensions</h2><p className="mt-1 text-sm text-slate-500">Select a shape and only the dimensions required by that geometry appear.</p></div><button type="button" onClick={reset} className="text-sm font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
+        <div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold text-slate-950">Custom dimensions</h2><p className="mt-1 text-sm text-slate-500">For sheets and plates, enter width, length and thickness. Other shapes show only their required dimensions.</p></div><button type="button" onClick={reset} className="text-sm font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium text-slate-700">Material<select value={material} onChange={e => setMaterial(e.target.value as Material)} className={inputClass}>{Object.entries(materials).map(([name, density]) => <option key={name} value={name}>{name} · {density.toLocaleString()} kg/m³</option>)}</select></label>
           <label className="text-sm font-medium text-slate-700">Shape<select value={shape} onChange={e => setShape(e.target.value as MetalWeightShape)} className={inputClass}>{shapeOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
           {definition.fields.map(field => <DimensionInput key={field.key} label={field.label} state={dimensions[field.key]} onChange={next => updateDimension(field.key, next)} />)}
-          <DimensionInput label="Length" state={customLength} onChange={setCustomLength} />
+          {shape !== "plate" && <DimensionInput label="Length" state={customLength} onChange={setCustomLength} />}
           <label className="text-sm font-medium text-slate-700">Number of pieces<input inputMode="numeric" min="1" step="1" value={customQuantity} onChange={e => setCustomQuantity(e.target.value)} className={inputClass} /></label>
         </div>
         <div className="mt-5 bg-slate-50 p-3 text-sm text-slate-600"><p className="font-medium text-slate-800">Flexible units</p><p className="mt-1 leading-5">Every dimension has its own unit selector. You can mix mm, cm, m, inches and feet.</p></div>
-        <div className="mt-3 border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900"><p className="font-medium">Engineering note</p><p className="mt-1 leading-5">Custom mode uses idealized geometry × material density. Rolled structural profiles can differ because of fillets, slopes and manufacturing tolerances.</p></div>
+        <div className="mt-3 border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900"><p className="font-medium">Engineering note</p><p className="mt-1 leading-5">Sheet/plate weight uses volume = width × length × thickness and weight = volume × material density. Rolled structural profiles can differ from idealized geometry because of fillets, slopes and manufacturing tolerances.</p></div>
       </section>
       <ResultCard title="Estimated weight" totalKg={customResult.totalKg} details={[["Material", material], ["Shape", definition.label], ["Piece weight", `${customResult.pieceKg.toFixed(3)} kg`], ["Quantity", String(customResult.pieces)]]} />
     </div>}
 
-    <section className="mt-6 max-w-3xl"><h2 className="text-xl font-semibold text-slate-950">How the calculator works</h2><p className="mt-1.5 text-sm leading-6 text-slate-600">Each dimension is converted to millimetres internally, then cross-sectional area, volume and weight are calculated from the selected geometry and material density.</p></section>
+    <section className="mt-6 max-w-3xl"><h2 className="text-xl font-semibold text-slate-950">How the calculator works</h2><p className="mt-1.5 text-sm leading-6 text-slate-600">Dimensions are converted to millimetres internally. For a sheet or plate, the exact rectangular volume model is width × length × thickness, then weight is volume × density.</p></section>
   </ToolShell>;
 }
 
