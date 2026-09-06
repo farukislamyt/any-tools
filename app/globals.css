@@ -9,7 +9,11 @@
   --primary: #2563eb;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  border-radius: 0 !important;
+}
+
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
@@ -27,5 +31,5 @@ button, a { -webkit-tap-highlight-color: transparent; }
 ::selection { background: #dbeafe; color: #172554; }
 
 @media (max-width: 640px) {
-  .container { width: min(100% - 24px, 1120px); }
+  .container { width: min(100% - 20px, 1120px); }
 }
