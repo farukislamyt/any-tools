@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   calculateMetalWeightKg,
+  calculatePlateWeightKg,
   crossSectionAreaMm2,
   isValidMetalGeometry,
   toMillimetres,
@@ -27,6 +28,29 @@ describe("metal cross-section geometry", () => {
 
   it("calculates octagon area from across-flats correctly", () => {
     expect(crossSectionAreaMm2("octagon", { acrossFlats: 100 })).toBeCloseTo(100 ** 2 / (2 * (1 + Math.sqrt(2))), 8);
+  });
+
+  it("calculates sheet/plate cross-section from width and thickness", () => {
+    expect(crossSectionAreaMm2("plate", { width: 1000, length: 2000, height: 5 })).toBeCloseTo(5000, 8);
+  });
+
+  it("calculates mild-steel plate weight with width × length × thickness", () => {
+    const result = calculatePlateWeightKg(1000, 2000, 5, 7850, 1);
+    expect(result.volumeMm3).toBe(10_000_000);
+    expect(result.pieceKg).toBeCloseTo(78.5, 10);
+    expect(result.totalKg).toBeCloseTo(78.5, 10);
+  });
+
+  it("calculates a 4 ft × 8 ft × 1 mm mild-steel sheet correctly", () => {
+    const widthMm = 4 * 304.8;
+    const lengthMm = 8 * 304.8;
+    const result = calculatePlateWeightKg(widthMm, lengthMm, 1, 7850, 1);
+    expect(result.pieceKg).toBeCloseTo(7.295, 3);
+  });
+
+  it("rejects incomplete plate dimensions", () => {
+    expect(isValidMetalGeometry("plate", { width: 1000, length: 2000, height: 0 })).toBe(false);
+    expect(calculatePlateWeightKg(1000, 2000, 0, 7850, 1).totalKg).toBe(0);
   });
 
   it("rejects impossible pipe and tube walls", () => {
