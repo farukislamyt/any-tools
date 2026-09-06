@@ -45,7 +45,7 @@ describe("metal cross-section geometry", () => {
     const widthMm = 4 * 304.8;
     const lengthMm = 8 * 304.8;
     const result = calculatePlateWeightKg(widthMm, lengthMm, 1, 7850, 1);
-    expect(result.pieceKg).toBeCloseTo(7.295, 3);
+    expect(result.pieceKg).toBeCloseTo(23.337243648, 6);
   });
 
   it("rejects incomplete plate dimensions", () => {
