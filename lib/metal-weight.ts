@@ -41,30 +41,62 @@ export const toMillimetres = (value: string, unit: MetalWeightUnit) => {
 };
 
 export type MetalDimensions = Partial<Record<DimensionKey, number>>;
-export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions): number {
+
+function positive(...values: number[]) {
+  return values.every(value => Number.isFinite(value) && value > 0);
+}
+
+export function isValidMetalGeometry(shape: MetalWeightShape, d: MetalDimensions): boolean {
   const a = d.diameter ?? d.side ?? d.width ?? d.sideA ?? d.outerDiameter ?? d.depth ?? 0;
   const b = d.height ?? d.sideB ?? 0;
   const t = d.wallThickness ?? 0;
   const f = d.flangeWidth ?? 0;
   const ft = d.flangeThickness ?? 0;
   const w = d.webThickness ?? 0;
+
+  switch (shape) {
+    case "round": case "wire": return positive(a);
+    case "square": return positive(a);
+    case "rectangle": case "flat": case "plate": return positive(a, b);
+    case "hex": case "octagon": return positive(a);
+    case "pipe": return positive(a, t) && 2 * t < a;
+    case "tube": return positive(a, b, t) && 2 * t < a && 2 * t < b;
+    case "angle": return positive(a, b, t) && t <= Math.min(a, b);
+    case "channel": case "i-beam": case "h-beam": case "z":
+      return positive(a, f, ft, w) && 2 * ft < a && w <= f;
+    case "tee": return positive(a, f, ft, w) && ft < a && w <= f;
+  }
+}
+
+export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions): number {
+  if (!isValidMetalGeometry(shape, d)) return 0;
+
+  const a = d.diameter ?? d.side ?? d.width ?? d.sideA ?? d.outerDiameter ?? d.depth ?? 0;
+  const b = d.height ?? d.sideB ?? 0;
+  const t = d.wallThickness ?? 0;
+  const f = d.flangeWidth ?? 0;
+  const ft = d.flangeThickness ?? 0;
+  const w = d.webThickness ?? 0;
+
   switch (shape) {
     case "round": case "wire": return Math.PI * (a / 2) ** 2;
     case "square": return a ** 2;
     case "rectangle": case "flat": case "plate": return a * b;
     case "hex": return (3 * Math.sqrt(3) * a ** 2) / 8;
-    case "octagon": return 2 * (1 + Math.sqrt(2)) * (a / 2) ** 2;
-    case "pipe": return Math.PI * ((a / 2) ** 2 - Math.max(0, (a - 2 * t) / 2) ** 2);
-    case "tube": return a * b - Math.max(0, a - 2 * t) * Math.max(0, b - 2 * t);
-    case "angle": return 2 * a * t + 2 * b * t - t ** 2;
-    case "channel": case "i-beam": case "h-beam": case "z": return 2 * f * ft + Math.max(0, a - 2 * ft) * w;
-    case "tee": return f * ft + Math.max(0, a - ft) * w;
+    case "octagon": return a ** 2 / (2 * (1 + Math.sqrt(2)));
+    case "pipe": return Math.PI * ((a / 2) ** 2 - ((a - 2 * t) / 2) ** 2);
+    case "tube": return a * b - (a - 2 * t) * (b - 2 * t);
+    case "angle": return t * (a + b - t);
+    case "channel": case "i-beam": case "h-beam": case "z": return 2 * f * ft + (a - 2 * ft) * w;
+    case "tee": return f * ft + (a - ft) * w;
   }
 }
 
 export function calculateMetalWeightKg(shape: MetalWeightShape, dimensions: MetalDimensions, lengthMm: number, densityKgM3: number, quantity = 1) {
   const areaMm2 = crossSectionAreaMm2(shape, dimensions);
-  const pieces = Math.max(1, Math.floor(quantity || 0));
-  const pieceKg = areaMm2 > 0 && lengthMm > 0 ? areaMm2 * lengthMm * densityKgM3 / 1e9 : 0;
+  const pieces = Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 0;
+  const pieceKg = areaMm2 > 0 && Number.isFinite(lengthMm) && lengthMm > 0 && Number.isFinite(densityKgM3) && densityKgM3 > 0
+    ? areaMm2 * lengthMm * densityKgM3 / 1e9
+    : 0;
   return { areaMm2, pieceKg, totalKg: pieceKg * pieces, tonnes: pieceKg * pieces / 1000, pieces };
 }
