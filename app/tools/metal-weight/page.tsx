@@ -36,14 +36,14 @@ const initialDimensions = (): DimensionState => ({
   flangeWidth: { value: "50", unit: "mm" }, flangeThickness: { value: "5", unit: "mm" }, webThickness: { value: "5", unit: "mm" },
 });
 
-const inputClass = "mt-2 h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100";
+const inputClass = "mt-1.5 h-11 w-full border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100";
 
 function DimensionInput({ label, state, onChange }: { label: string; state: { value: string; unit: MetalWeightUnit }; onChange: (next: { value: string; unit: MetalWeightUnit }) => void }) {
   return <label className="text-sm font-medium text-slate-700">
     {label}
-    <div className="mt-2 grid grid-cols-[minmax(0,1fr)_92px] gap-2">
-      <input inputMode="decimal" min="0" value={state.value} onChange={e => onChange({ ...state, value: e.target.value })} className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100" />
-      <select value={state.unit} onChange={e => onChange({ ...state, unit: e.target.value as MetalWeightUnit })} className="h-12 rounded-xl border border-slate-200 bg-white px-2 text-slate-900 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
+    <div className="mt-1.5 grid grid-cols-[minmax(0,1fr)_82px] gap-1.5">
+      <input inputMode="decimal" min="0" value={state.value} onChange={e => onChange({ ...state, value: e.target.value })} className="h-11 w-full border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100" />
+      <select value={state.unit} onChange={e => onChange({ ...state, unit: e.target.value as MetalWeightUnit })} className="h-11 border border-slate-200 bg-white px-2 text-slate-900 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">
         {metalWeightUnits.map(unit => <option key={unit.value} value={unit.value}>{unit.label}</option>)}
       </select>
     </div>
@@ -85,45 +85,45 @@ export default function MetalWeightPage() {
     setMaterial("Steel"); setShape("round"); setDimensions(initialDimensions()); setCustomLength({ value: "1000", unit: "mm" }); setCustomQuantity("1");
   };
 
-  return <ToolShell title="Metal Weight Calculator" description="Calculate metal weight with standard Indian rolled sections or flexible custom dimensions. Inputs change automatically for the selected shape.">
-    <div className="mb-5 rounded-3xl border border-slate-200 bg-white p-2 shadow-sm"><div className="grid grid-cols-2 gap-2">
-      <button type="button" onClick={() => setMode("standard")} className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${mode === "standard" ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Standard steel sections</button>
-      <button type="button" onClick={() => setMode("custom")} className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${mode === "custom" ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Custom dimensions</button>
+  return <ToolShell title="Metal Weight Calculator" description="Calculate metal weight with standard Indian rolled sections or flexible custom dimensions. Inputs change automatically for the selected shape." category="Engineering">
+    <div className="mb-4 border border-slate-200 bg-white p-1.5 shadow-sm"><div className="grid grid-cols-2 gap-1">
+      <button type="button" onClick={() => setMode("standard")} className={`px-3 py-2 text-sm font-semibold transition ${mode === "standard" ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Standard steel sections</button>
+      <button type="button" onClick={() => setMode("custom")} className={`px-3 py-2 text-sm font-semibold transition ${mode === "custom" ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Custom dimensions</button>
     </div></div>
 
-    {mode === "standard" ? <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-        <div className="mb-6 flex items-start justify-between gap-4"><div><h2 className="text-lg font-semibold text-slate-950">Standard rolled section</h2><p className="mt-1 text-sm text-slate-500">Choose a catalogue section; its standard mass per metre is used.</p></div><button type="button" onClick={reset} className="text-sm font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
-        <div className="grid gap-5 sm:grid-cols-2">
+    {mode === "standard" ? <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold text-slate-950">Standard rolled section</h2><p className="mt-1 text-sm text-slate-500">Choose a catalogue section; its standard mass per metre is used.</p></div><button type="button" onClick={reset} className="text-sm font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
+        <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium text-slate-700">Section family<select value={family} onChange={e => { const next = e.target.value as typeof family; setFamily(next); setDesignation(steelSections.find(s => s.family === next)?.designation ?? ""); }} className={inputClass}>{sectionFamilies.map(f => <option key={f}>{f}</option>)}</select></label>
           <label className="text-sm font-medium text-slate-700">Section designation<select value={designation} onChange={e => setDesignation(e.target.value)} className={inputClass}>{familySections.map(s => <option key={s.designation} value={s.designation}>{s.designation} · {s.massKgPerM} kg/m</option>)}</select></label>
           <DimensionInput label="Length per piece" state={standardLength} onChange={setStandardLength} />
           <label className="text-sm font-medium text-slate-700">Number of pieces<input inputMode="numeric" min="1" step="1" value={standardQuantity} onChange={e => setStandardQuantity(e.target.value)} className={inputClass} /></label>
         </div>
-        <div className="mt-7 grid gap-3 rounded-2xl bg-slate-50 p-4 text-sm sm:grid-cols-3"><div><p className="text-xs text-slate-400">Standard mass</p><p className="mt-1 font-semibold text-slate-900">{selectedStandard?.massKgPerM ?? 0} kg/m</p></div><div><p className="text-xs text-slate-400">Nominal depth</p><p className="mt-1 font-semibold text-slate-900">{selectedStandard?.depthMm ? `${selectedStandard.depthMm} mm` : "—"}</p></div><div><p className="text-xs text-slate-400">Nominal width</p><p className="mt-1 font-semibold text-slate-900">{selectedStandard?.widthMm ? `${selectedStandard.widthMm} mm` : "—"}</p></div></div>
-        <p className="mt-5 text-xs leading-5 text-slate-500">Catalogue values are intended for quantity and weight estimation. For fabrication, procurement or structural design, verify the applicable standard and mill certificate.</p>
+        <div className="mt-5 grid gap-3 bg-slate-50 p-3 text-sm sm:grid-cols-3"><div><p className="text-xs text-slate-400">Standard mass</p><p className="mt-1 font-semibold text-slate-900">{selectedStandard?.massKgPerM ?? 0} kg/m</p></div><div><p className="text-xs text-slate-400">Nominal depth</p><p className="mt-1 font-semibold text-slate-900">{selectedStandard?.depthMm ? `${selectedStandard.depthMm} mm` : "—"}</p></div><div><p className="text-xs text-slate-400">Nominal width</p><p className="mt-1 font-semibold text-slate-900">{selectedStandard?.widthMm ? `${selectedStandard.widthMm} mm` : "—"}</p></div></div>
+        <p className="mt-4 text-xs leading-5 text-slate-500">Catalogue values are intended for quantity and weight estimation. For fabrication, procurement or structural design, verify the applicable standard and mill certificate.</p>
       </section>
-      <ResultCard title="Total estimated weight" totalKg={standardResult.totalKg} details={[['Section', selectedStandard?.designation ?? '—'], ['Piece weight', `${standardResult.pieceKg.toFixed(3)} kg`], ['Quantity', String(standardResult.pieces)]]} />
-    </div> : <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
-        <div className="mb-6 flex items-start justify-between gap-4"><div><h2 className="text-lg font-semibold text-slate-950">Custom dimensions</h2><p className="mt-1 text-sm text-slate-500">Select a shape and only the dimensions required by that geometry appear.</p></div><button type="button" onClick={reset} className="text-sm font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
-        <div className="grid gap-5 sm:grid-cols-2">
+      <ResultCard title="Total estimated weight" totalKg={standardResult.totalKg} details={[["Section", selectedStandard?.designation ?? "—"], ["Piece weight", `${standardResult.pieceKg.toFixed(3)} kg`], ["Quantity", String(standardResult.pieces)]]} />
+    </div> : <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold text-slate-950">Custom dimensions</h2><p className="mt-1 text-sm text-slate-500">Select a shape and only the dimensions required by that geometry appear.</p></div><button type="button" onClick={reset} className="text-sm font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
+        <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-sm font-medium text-slate-700">Material<select value={material} onChange={e => setMaterial(e.target.value as Material)} className={inputClass}>{Object.entries(materials).map(([name, density]) => <option key={name} value={name}>{name} · {density.toLocaleString()} kg/m³</option>)}</select></label>
           <label className="text-sm font-medium text-slate-700">Shape<select value={shape} onChange={e => setShape(e.target.value as MetalWeightShape)} className={inputClass}>{shapeOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
           {definition.fields.map(field => <DimensionInput key={field.key} label={field.label} state={dimensions[field.key]} onChange={next => updateDimension(field.key, next)} />)}
           <DimensionInput label="Length" state={customLength} onChange={setCustomLength} />
           <label className="text-sm font-medium text-slate-700">Number of pieces<input inputMode="numeric" min="1" step="1" value={customQuantity} onChange={e => setCustomQuantity(e.target.value)} className={inputClass} /></label>
         </div>
-        <div className="mt-7 rounded-2xl bg-slate-50 p-4 text-sm text-slate-600"><p className="font-medium text-slate-800">Flexible units</p><p className="mt-1 leading-6">Every dimension has its own unit selector. You can mix mm, cm, m, inches and feet. Changing the shape automatically changes the required fields.</p></div>
-        <div className="mt-4 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-900"><p className="font-medium">Engineering note</p><p className="mt-1 leading-6">Custom mode uses idealized geometry × material density. Rolled structural profiles can differ because of fillets, slopes and manufacturing tolerances; use a verified catalogue mass when an exact standard section is available.</p></div>
+        <div className="mt-5 bg-slate-50 p-3 text-sm text-slate-600"><p className="font-medium text-slate-800">Flexible units</p><p className="mt-1 leading-5">Every dimension has its own unit selector. You can mix mm, cm, m, inches and feet.</p></div>
+        <div className="mt-3 border border-amber-100 bg-amber-50 p-3 text-sm text-amber-900"><p className="font-medium">Engineering note</p><p className="mt-1 leading-5">Custom mode uses idealized geometry × material density. Rolled structural profiles can differ because of fillets, slopes and manufacturing tolerances.</p></div>
       </section>
-      <ResultCard title="Estimated weight" totalKg={customResult.totalKg} details={[['Material', material], ['Shape', definition.label], ['Piece weight', `${customResult.pieceKg.toFixed(3)} kg`], ['Quantity', String(customResult.pieces)]]} />
+      <ResultCard title="Estimated weight" totalKg={customResult.totalKg} details={[["Material", material], ["Shape", definition.label], ["Piece weight", `${customResult.pieceKg.toFixed(3)} kg`], ["Quantity", String(customResult.pieces)]]} />
     </div>}
 
-    <section className="mt-8 max-w-3xl"><h2 className="text-xl font-semibold text-slate-950">How the calculator works</h2><p className="mt-2 text-sm leading-6 text-slate-600">The shape definition controls both the visible inputs and the calculation engine. Each dimension is converted to millimetres internally, then cross-sectional area, volume and weight are calculated from the selected geometry and material density.</p></section>
+    <section className="mt-6 max-w-3xl"><h2 className="text-xl font-semibold text-slate-950">How the calculator works</h2><p className="mt-1.5 text-sm leading-6 text-slate-600">Each dimension is converted to millimetres internally, then cross-sectional area, volume and weight are calculated from the selected geometry and material density.</p></section>
   </ToolShell>;
 }
 
 function ResultCard({ title, totalKg, details }: { title: string; totalKg: number; details: [string, string][] }) {
-  return <aside className="h-fit rounded-3xl bg-slate-950 p-6 text-white shadow-sm sm:p-7 lg:sticky lg:top-6"><p className="text-sm text-slate-400">{title}</p><div className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">{totalKg.toFixed(3)} <span className="text-lg font-medium text-slate-400">kg</span></div><p className="mt-2 text-sm text-slate-500">{(totalKg / 1000).toFixed(4)} tonnes</p><div className="mt-7 border-t border-slate-800 pt-5 text-sm">{details.map(([label, value]) => <div key={label} className="mt-3 flex justify-between gap-4 first:mt-0"><span className="text-slate-400">{label}</span><span className="text-right">{value}</span></div>)}</div></aside>;
+  return <aside className="h-fit bg-slate-950 p-5 text-white shadow-sm sm:p-6 lg:sticky lg:top-4"><p className="text-sm text-slate-400">{title}</p><div className="mt-1.5 text-4xl font-bold tracking-tight sm:text-5xl">{totalKg.toFixed(3)} <span className="text-lg font-medium text-slate-400">kg</span></div><p className="mt-1 text-sm text-slate-500">{(totalKg / 1000).toFixed(4)} tonnes</p><div className="mt-5 border-t border-slate-800 pt-4 text-sm">{details.map(([label, value]) => <div key={label} className="mt-2.5 flex justify-between gap-4 first:mt-0"><span className="text-slate-400">{label}</span><span className="text-right">{value}</span></div>)}</div></aside>;
 }
