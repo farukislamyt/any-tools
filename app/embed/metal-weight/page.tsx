@@ -15,9 +15,33 @@ export default function MetalWeightEmbed() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const requestedTheme = params.get("theme");
-    if (requestedTheme === "dark") setTheme("dark");
-    if (requestedTheme === "light") setTheme("light");
-    const sendHeight = () => window.parent.postMessage({ type: "anytools-resize", height: document.documentElement.scrollHeight }, "*");
+    const requestedFamily = params.get("family") as (typeof sectionFamilies)[number] | null;
+    const requestedDesignation = params.get("designation");
+    const requestedLength = params.get("length");
+    const requestedQuantity = params.get("quantity");
+
+    if (requestedTheme === "dark" || requestedTheme === "light") setTheme(requestedTheme);
+
+    const validFamily = requestedFamily && sectionFamilies.includes(requestedFamily);
+    if (validFamily) {
+      setFamily(requestedFamily);
+      const familyDesignation = steelSections.find((s) => s.family === requestedFamily)?.designation ?? "";
+      setDesignation(requestedDesignation && steelSections.some((s) => s.family === requestedFamily && s.designation === requestedDesignation) ? requestedDesignation : familyDesignation);
+    } else if (requestedDesignation && steelSections.some((s) => s.designation === requestedDesignation)) {
+      const match = steelSections.find((s) => s.designation === requestedDesignation);
+      if (match) {
+        setFamily(match.family);
+        setDesignation(match.designation);
+      }
+    }
+
+    if (requestedLength && Number.isFinite(Number(requestedLength))) setLength(requestedLength);
+    if (requestedQuantity && Number.isFinite(Number(requestedQuantity))) setQuantity(requestedQuantity);
+
+    const sendHeight = () => {
+      const targetOrigin = document.referrer ? new URL(document.referrer).origin : "*";
+      window.parent.postMessage({ type: "anytools-resize", height: document.documentElement.scrollHeight }, targetOrigin);
+    };
     sendHeight();
     window.addEventListener("load", sendHeight);
     const observer = new ResizeObserver(sendHeight);
@@ -25,8 +49,8 @@ export default function MetalWeightEmbed() {
     return () => { window.removeEventListener("load", sendHeight); observer.disconnect(); };
   }, []);
 
-  const sections = useMemo(() => steelSections.filter(s => s.family === family), [family]);
-  const selected = steelSections.find(s => s.designation === designation) ?? sections[0];
+  const sections = useMemo(() => steelSections.filter((s) => s.family === family), [family]);
+  const selected = steelSections.find((s) => s.designation === designation) ?? sections[0];
   const total = (Number(length) || 0) * (Number(quantity) || 0) * (selected?.massKgPerM || 0);
 
   return (
@@ -34,10 +58,10 @@ export default function MetalWeightEmbed() {
       <div className="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
         <div className="mb-5"><p className="text-xs font-semibold uppercase tracking-wider text-slate-400">AnyTools</p><h1 className="mt-1 text-xl font-bold">Steel Weight Calculator</h1><p className="mt-1 text-sm text-slate-500">Standard section mass × length × quantity</p></div>
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="text-sm font-medium">Section family<select className={input} value={family} onChange={e => { const f = e.target.value as typeof family; setFamily(f); setDesignation(steelSections.find(s => s.family === f)?.designation ?? ""); }}>{sectionFamilies.map(f => <option key={f}>{f}</option>)}</select></label>
-          <label className="text-sm font-medium">Section<select className={input} value={designation} onChange={e => setDesignation(e.target.value)}>{sections.map(s => <option key={s.designation} value={s.designation}>{s.designation} · {s.massKgPerM} kg/m</option>)}</select></label>
-          <label className="text-sm font-medium">Length per piece (m)<input className={input} type="number" min="0" step="0.01" value={length} onChange={e => setLength(e.target.value)} /></label>
-          <label className="text-sm font-medium">Quantity<input className={input} type="number" min="1" step="1" value={quantity} onChange={e => setQuantity(e.target.value)} /></label>
+          <label className="text-sm font-medium">Section family<select className={input} value={family} onChange={(e) => { const f = e.target.value as typeof family; setFamily(f); setDesignation(steelSections.find((s) => s.family === f)?.designation ?? ""); }}>{sectionFamilies.map((f) => <option key={f}>{f}</option>)}</select></label>
+          <label className="text-sm font-medium">Section<select className={input} value={designation} onChange={(e) => setDesignation(e.target.value)}>{sections.map((s) => <option key={s.designation} value={s.designation}>{s.designation} · {s.massKgPerM} kg/m</option>)}</select></label>
+          <label className="text-sm font-medium">Length per piece (m)<input className={input} type="number" min="0" step="0.01" value={length} onChange={(e) => setLength(e.target.value)} /></label>
+          <label className="text-sm font-medium">Quantity<input className={input} type="number" min="1" step="1" value={quantity} onChange={(e) => setQuantity(e.target.value)} /></label>
         </div>
         <div className="mt-5 rounded-2xl bg-slate-950 p-5 text-white"><p className="text-sm text-slate-400">Estimated total weight</p><p className="mt-1 text-4xl font-bold">{total.toFixed(3)} <span className="text-base font-medium text-slate-400">kg</span></p><div className="mt-4 grid grid-cols-3 gap-3 border-t border-slate-800 pt-4 text-sm"><div><span className="block text-slate-500">Mass</span>{selected?.massKgPerM ?? 0} kg/m</div><div><span className="block text-slate-500">Piece</span>{((Number(length) || 0) * (selected?.massKgPerM || 0)).toFixed(3)} kg</div><div><span className="block text-slate-500">Qty</span>{Number(quantity) || 0}</div></div></div>
         <div className="mt-4 flex items-center justify-between gap-3 text-xs text-slate-400"><span>Estimation only; verify applicable standard before procurement.</span><a href="/tools/metal-weight" target="_blank" rel="noreferrer" className="font-medium text-slate-600 hover:text-slate-950">Open full calculator ↗</a></div>
