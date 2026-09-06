@@ -4,7 +4,7 @@ export type MetalWeightShape =
 
 export type MetalWeightUnit = "mm" | "cm" | "m" | "in" | "ft";
 export type DimensionKey =
-  | "diameter" | "side" | "width" | "height" | "acrossCorners" | "acrossFlats"
+  | "diameter" | "side" | "width" | "height" | "length" | "acrossCorners" | "acrossFlats"
   | "outerDiameter" | "wallThickness" | "sideA" | "sideB" | "depth"
   | "flangeWidth" | "flangeThickness" | "webThickness";
 export type ShapeField = { key: DimensionKey; label: string };
@@ -15,7 +15,7 @@ export const shapeDefinitions: Record<MetalWeightShape, { label: string; fields:
   square: { label: "Square bar", fields: [{ key: "side", label: "Side" }] },
   rectangle: { label: "Rectangle bar", fields: [{ key: "width", label: "Side A / Width" }, { key: "height", label: "Side B / Height" }] },
   flat: { label: "Flat bar", fields: [{ key: "width", label: "Width" }, { key: "height", label: "Thickness" }] },
-  plate: { label: "Plate / sheet", fields: [{ key: "width", label: "Width" }, { key: "height", label: "Thickness" }] },
+  plate: { label: "Sheet / plate", fields: [{ key: "width", label: "Width" }, { key: "length", label: "Length" }, { key: "height", label: "Thickness" }] },
   hex: { label: "Hex bar", fields: [{ key: "acrossCorners", label: "Across corners" }] },
   octagon: { label: "Octagonal bar", fields: [{ key: "acrossFlats", label: "Across flats" }] },
   pipe: { label: "Round pipe", fields: [{ key: "outerDiameter", label: "Outside diameter" }, { key: "wallThickness", label: "Wall thickness" }] },
@@ -57,7 +57,8 @@ export function isValidMetalGeometry(shape: MetalWeightShape, d: MetalDimensions
   switch (shape) {
     case "round": case "wire": return positive(a);
     case "square": return positive(a);
-    case "rectangle": case "flat": case "plate": return positive(a, b);
+    case "rectangle": case "flat": return positive(a, b);
+    case "plate": return positive(d.width ?? 0, d.length ?? 0, d.height ?? 0);
     case "hex": case "octagon": return positive(a);
     case "pipe": return positive(a, t) && 2 * t < a;
     case "tube": return positive(a, b, t) && 2 * t < a && 2 * t < b;
@@ -69,6 +70,9 @@ export function isValidMetalGeometry(shape: MetalWeightShape, d: MetalDimensions
 }
 
 export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions): number {
+  if (shape === "plate") {
+    return isValidMetalGeometry(shape, d) ? (d.width ?? 0) * (d.height ?? 0) : 0;
+  }
   if (!isValidMetalGeometry(shape, d)) return 0;
 
   const a = d.diameter ?? d.side ?? d.width ?? d.sideA ?? d.outerDiameter ?? d.depth ?? 0;
@@ -81,7 +85,7 @@ export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions)
   switch (shape) {
     case "round": case "wire": return Math.PI * (a / 2) ** 2;
     case "square": return a ** 2;
-    case "rectangle": case "flat": case "plate": return a * b;
+    case "rectangle": case "flat": return a * b;
     case "hex": return (3 * Math.sqrt(3) * a ** 2) / 8;
     case "octagon": return a ** 2 / (2 * (1 + Math.sqrt(2)));
     case "pipe": return Math.PI * ((a / 2) ** 2 - ((a - 2 * t) / 2) ** 2);
@@ -89,6 +93,7 @@ export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions)
     case "angle": return t * (a + b - t);
     case "channel": case "i-beam": case "h-beam": case "z": return 2 * f * ft + (a - 2 * ft) * w;
     case "tee": return f * ft + (a - ft) * w;
+    case "plate": return 0;
   }
 }
 
@@ -99,4 +104,19 @@ export function calculateMetalWeightKg(shape: MetalWeightShape, dimensions: Meta
     ? areaMm2 * lengthMm * densityKgM3 / 1e9
     : 0;
   return { areaMm2, pieceKg, totalKg: pieceKg * pieces, tonnes: pieceKg * pieces / 1000, pieces };
+}
+
+export function calculatePlateWeightKg(widthMm: number, lengthMm: number, thicknessMm: number, densityKgM3: number, quantity = 1) {
+  const valid = positive(widthMm, lengthMm, thicknessMm, densityKgM3);
+  const pieces = Number.isFinite(quantity) && quantity > 0 ? Math.floor(quantity) : 0;
+  const volumeMm3 = valid ? widthMm * lengthMm * thicknessMm : 0;
+  const pieceKg = valid ? volumeMm3 * densityKgM3 / 1e9 : 0;
+  return {
+    areaMm2: valid ? widthMm * thicknessMm : 0,
+    volumeMm3,
+    pieceKg,
+    totalKg: pieceKg * pieces,
+    tonnes: pieceKg * pieces / 1000,
+    pieces,
+  };
 }
