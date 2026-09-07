@@ -93,7 +93,6 @@ export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions)
     case "angle": return t * (a + b - t);
     case "channel": case "i-beam": case "h-beam": case "z": return 2 * f * ft + (a - 2 * ft) * w;
     case "tee": return f * ft + (a - ft) * w;
-    case "plate": return 0;
   }
 }
 
