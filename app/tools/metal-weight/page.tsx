@@ -2,20 +2,20 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { ToolShell } from "@/components/tool-shell";
-import { sectionFamilies, steelSections } from "@/lib/steel-sections";
 import {
   calculateMetalWeightKg,
   calculatePlateWeightKg,
+  isValidMetalGeometry,
   metalWeightUnits,
   shapeDefinitions,
   shapeOptions,
   toMillimetres,
   type DimensionKey,
+  type MetalDimensions,
   type MetalWeightShape,
   type MetalWeightUnit,
 } from "@/lib/metal-weight";
 
-type Mode = "standard" | "custom";
 type Material = keyof typeof materials;
 type DimensionState = Record<DimensionKey, { value: string; unit: MetalWeightUnit }>;
 type Result = ReturnType<typeof calculateMetalWeightKg>;
@@ -52,8 +52,6 @@ const initialDimensions = (): DimensionState => ({
   sideA: { value: "2", unit: "in" }, sideB: { value: "2", unit: "in" }, depth: { value: "100", unit: "mm" }, flangeWidth: { value: "50", unit: "mm" }, flangeThickness: { value: "5", unit: "mm" }, webThickness: { value: "5", unit: "mm" },
 });
 
-const inputClass = "mt-1.5 h-11 w-full border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100";
-
 function DimensionInput({ label, state, onChange }: { label: string; state: { value: string; unit: MetalWeightUnit }; onChange: (next: { value: string; unit: MetalWeightUnit }) => void }) {
   return <label className="text-sm font-medium text-slate-700">{label}<div className="mt-1.5 grid grid-cols-[minmax(0,1fr)_72px] gap-1.5"><input aria-label={label} inputMode="decimal" min="0" value={state.value} onChange={e => onChange({ ...state, value: e.target.value })} className="h-11 w-full min-w-0 border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100" /><select aria-label={`${label} unit`} value={state.unit} onChange={e => onChange({ ...state, unit: e.target.value as MetalWeightUnit })} className="h-11 min-w-0 border border-slate-200 bg-white px-1.5 text-slate-900 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">{metalWeightUnits.map(unit => <option key={unit.value} value={unit.value}>{unit.label}</option>)}</select></div></label>;
 }
@@ -67,8 +65,8 @@ function ShapeDiagram({ shape }: { shape: MetalWeightShape }) {
   if (shape === "square") return <DiagramFrame label="Square bar dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Square bar side A and length L</title><rect x="75" y="35" width="80" height="80" {...common}/><text x="115" y="28" textAnchor="middle">A</text><line x1="175" y1="75" x2="305" y2="75" stroke="currentColor"/><text x="240" y="65" textAnchor="middle">L</text></svg></DiagramFrame>;
   if (shape === "flat") return <DiagramFrame label="Flat bar dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Flat bar width W, thickness T and length L</title><rect x="75" y="60" width="120" height="25" {...common}/><text x="135" y="52" textAnchor="middle">W</text><text x="60" y="77">T</text><line x1="205" y1="72" x2="310" y2="72" stroke="currentColor"/><text x="258" y="62" textAnchor="middle">L</text></svg></DiagramFrame>;
   if (shape === "pipe") return <DiagramFrame label="Pipe dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Pipe outside diameter D and wall thickness T</title><circle cx="120" cy="70" r="48" {...common}/><circle cx="120" cy="70" r="34" fill="none" stroke="currentColor" strokeWidth="2"/><text x="120" y="57" textAnchor="middle">OD</text><text x="120" y="78" textAnchor="middle">ID</text><text x="175" y="50">T</text><line x1="180" y1="70" x2="310" y2="70" stroke="currentColor"/><text x="245" y="60" textAnchor="middle">L</text></svg></DiagramFrame>;
-  if (shape === "tube" || shape === "rectangle") return <DiagramFrame label="Tube dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Tube width W, height H and length L</title><rect x="70" y="35" width="100" height="75" {...common}/>{shape === "tube" && <rect x="83" y="48" width="74" height="49" fill="none" stroke="currentColor"/>}<text x="120" y="28" textAnchor="middle">W</text><text x="55" y="77">H</text><line x1="185" y1="72" x2="310" y2="72" stroke="currentColor"/><text x="248" y="62" textAnchor="middle">L</text></svg></DiagramFrame>;
-  if (shape === "hex" || shape === "octagon") return <DiagramFrame label="Polygon bar dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Polygon bar dimension and length</title><polygon points="120,25 160,48 160,92 120,115 80,92 80,48" {...common}/><text x="120" y="77" textAnchor="middle">{shape === "hex" ? "AF/AC" : "AF"}</text><line x1="185" y1="70" x2="310" y2="70" stroke="currentColor"/><text x="248" y="60" textAnchor="middle">L</text></svg></DiagramFrame>;
+  if (shape === "tube" || shape === "rectangle") return <DiagramFrame label={`${shapeDefinitions[shape].label} dimensions diagram`}><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>{shapeDefinitions[shape].label} width W, height H and length L</title><rect x="70" y="35" width="100" height="75" {...common}/>{shape === "tube" && <rect x="83" y="48" width="74" height="49" fill="none" stroke="currentColor"/>}<text x="120" y="28" textAnchor="middle">W</text><text x="55" y="77">H</text><line x1="185" y1="72" x2="310" y2="72" stroke="currentColor"/><text x="248" y="62" textAnchor="middle">L</text></svg></DiagramFrame>;
+  if (shape === "hex" || shape === "octagon") return <DiagramFrame label="Polygon bar dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>{shapeDefinitions[shape].label} dimension and length</title><polygon points="120,25 160,48 160,92 120,115 80,92 80,48" {...common}/><text x="120" y="77" textAnchor="middle">{shape === "hex" ? "AC" : "AF"}</text><line x1="185" y1="70" x2="310" y2="70" stroke="currentColor"/><text x="248" y="60" textAnchor="middle">L</text></svg></DiagramFrame>;
   return <DiagramFrame label={`${shapeDefinitions[shape].label} diagram`}><svg viewBox="0 0 360 160" className="h-auto w-full max-w-[360px]" role="img"><title>{shapeDefinitions[shape].label} dimensions</title><path d="M70 35h115v22h-65v23h65v22H70Z" {...common}/><text x="128" y="132" textAnchor="middle">Section dimensions</text><line x1="205" y1="80" x2="310" y2="80" stroke="currentColor"/><text x="258" y="70" textAnchor="middle">L</text></svg></DiagramFrame>;
 }
 
@@ -76,7 +74,8 @@ function formulaFor(shape: MetalWeightShape) {
   switch (shape) {
     case "round": case "wire": return "Area = π × D² / 4";
     case "square": return "Area = A²";
-    case "rectangle": case "flat": return "Area = W × T";
+    case "rectangle": return "Area = A × B";
+    case "flat": return "Area = W × T";
     case "plate": return "Volume = W × L × T";
     case "hex": return "Area = 3√3 × AC² / 8";
     case "octagon": return "Area = AF² / [2 × (1 + √2)]";
@@ -90,39 +89,79 @@ function formulaFor(shape: MetalWeightShape) {
 }
 
 export default function MetalWeightPage() {
-  const [mode, setMode] = useState<Mode>("custom");
-  const [family, setFamily] = useState<(typeof sectionFamilies)[number]>("ISMB");
-  const [designation, setDesignation] = useState("ISMB 200");
-  const [standardLength, setStandardLength] = useState({ value: "6", unit: "m" as MetalWeightUnit });
-  const [standardQuantity, setStandardQuantity] = useState("1");
   const [material, setMaterial] = useState<Material>("Steel");
   const [shape, setShape] = useState<MetalWeightShape>("plate");
   const [dimensions, setDimensions] = useState<DimensionState>(initialDimensions);
-  const [customLength, setCustomLength] = useState({ value: "4", unit: "ft" as MetalWeightUnit });
+  const [customLength, setCustomLength] = useState({ value: "20", unit: "ft" as MetalWeightUnit });
   const [customQuantity, setCustomQuantity] = useState("1");
   const [calculatedResult, setCalculatedResult] = useState<Result | null>(null);
+  const [error, setError] = useState("");
 
-  const familySections = useMemo(() => steelSections.filter(s => s.family === family), [family]);
-  const selectedStandard = steelSections.find(s => s.designation === designation) ?? familySections[0];
   const definition = shapeDefinitions[shape];
-  const normalizedDimensions = useMemo(() => Object.fromEntries(Object.entries(dimensions).map(([key, state]) => [key, toMillimetres(state.value, state.unit)])) as Partial<Record<DimensionKey, number>>, [dimensions]);
-  const currentResult = useMemo(() => shape === "plate" ? calculatePlateWeightKg(normalizedDimensions.width ?? 0, normalizedDimensions.length ?? 0, normalizedDimensions.height ?? 0, materials[material], Number(customQuantity)) : calculateMetalWeightKg(shape, normalizedDimensions, toMillimetres(customLength.value, customLength.unit), materials[material], Number(customQuantity)), [shape, normalizedDimensions, customLength, customQuantity, material]);
-  const standardResult = useMemo(() => { const meters = toMillimetres(standardLength.value, standardLength.unit) / 1000; const pieces = Number.isFinite(Number(standardQuantity)) && Number(standardQuantity) > 0 ? Math.floor(Number(standardQuantity)) : 0; const kgPerM = selectedStandard?.massKgPerM ?? 0; const pieceKg = kgPerM * meters; return { pieces, pieceKg, totalKg: pieceKg * pieces }; }, [standardLength, standardQuantity, selectedStandard]);
+  const normalizedDimensions = useMemo(() => Object.fromEntries(Object.entries(dimensions).map(([key, state]) => [key, toMillimetres(state.value, state.unit)])) as MetalDimensions, [dimensions]);
+  const lengthMm = toMillimetres(customLength.value, customLength.unit);
+  const quantity = Number(customQuantity);
+  const geometryValid = shape === "plate"
+    ? Boolean(normalizedDimensions.width && normalizedDimensions.length && normalizedDimensions.height)
+    : isValidMetalGeometry(shape, normalizedDimensions) && lengthMm > 0;
+  const currentResult = useMemo(() => shape === "plate"
+    ? calculatePlateWeightKg(normalizedDimensions.width ?? 0, normalizedDimensions.length ?? 0, normalizedDimensions.height ?? 0, materials[material], quantity)
+    : calculateMetalWeightKg(shape, normalizedDimensions, lengthMm, materials[material], quantity), [shape, normalizedDimensions, lengthMm, material, quantity]);
 
-  const updateDimension = (key: DimensionKey, next: { value: string; unit: MetalWeightUnit }) => setDimensions(current => ({ ...current, [key]: next }));
-  const selectShape = (next: MetalWeightShape) => { setShape(next); setCalculatedResult(null); const preset = presets[next]; setDimensions(current => ({ ...current, ...preset })); setCustomLength({ value: next === "plate" ? "4" : next === "equal-angle" || next === "angle" || next === "flat" || next === "pipe" || next === "tube" ? "20" : "20", unit: "ft" })); };
-  const calculate = () => setCalculatedResult(currentResult);
-  const clear = () => setCalculatedResult(null);
-  const reset = () => { setMode("custom"); setFamily("ISMB"); setDesignation("ISMB 200"); setStandardLength({ value: "6", unit: "m" }); setStandardQuantity("1"); setMaterial("Steel"); setShape("plate"); setDimensions(initialDimensions()); setCustomLength({ value: "4", unit: "ft" }); setCustomQuantity("1"); setCalculatedResult(null); };
+  const updateDimension = (key: DimensionKey, next: { value: string; unit: MetalWeightUnit }) => {
+    setDimensions(current => ({ ...current, [key]: next }));
+    setCalculatedResult(null);
+    setError("");
+  };
+  const selectShape = (next: MetalWeightShape) => {
+    setShape(next);
+    setDimensions(current => ({ ...current, ...presets[next] }));
+    setCustomLength({ value: "20", unit: "ft" });
+    setCalculatedResult(null);
+    setError("");
+  };
+  const calculate = () => {
+    if (!geometryValid) {
+      setCalculatedResult(null);
+      setError(shape === "pipe" ? "Enter a valid outside diameter and wall thickness. Wall thickness must be less than half the outside diameter." : shape === "tube" ? "Enter valid outside width, height and wall thickness. Wall thickness must be less than half of both outside dimensions." : "Enter positive values for all required dimensions and length.");
+      return;
+    }
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      setCalculatedResult(null);
+      setError("Quantity must be a whole number greater than or equal to 1.");
+      return;
+    }
+    setError("");
+    setCalculatedResult(currentResult);
+  };
+  const clear = () => { setCalculatedResult(null); setError(""); };
+  const reset = () => { setMaterial("Steel"); setShape("plate"); setDimensions(initialDimensions()); setCustomLength({ value: "20", unit: "ft" }); setCustomQuantity("1"); setCalculatedResult(null); setError(""); };
   const result = calculatedResult;
   const totalKg = result?.totalKg ?? 0;
   const pounds = totalKg * 2.20462262185;
   const area = result?.areaMm2 ?? 0;
   const valid = Boolean(result && result.totalKg > 0 && result.pieces > 0);
 
-  return <ToolShell title="Metal Weight Calculator" description="Calculate steel and metal weight from standard sections or custom dimensions." category="Engineering">
-    <div className="mb-4 border border-slate-200 bg-white p-1 shadow-sm"><div className="grid grid-cols-2 gap-1"><button type="button" onClick={() => setMode("standard")} className={`min-h-11 px-2 text-sm font-semibold ${mode === "standard" ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Standard sections</button><button type="button" onClick={() => setMode("custom")} className={`min-h-11 px-2 text-sm font-semibold ${mode === "custom" ? "bg-slate-950 text-white" : "text-slate-600 hover:bg-slate-50"}`}>Custom dimensions</button></div></div>
-    {mode === "standard" ? <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]"><section className="border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold text-slate-950">Steel section</h2><p className="mt-1 text-sm text-slate-500">Select a standard section, length and quantity.</p></div><button type="button" onClick={reset} className="text-sm font-medium text-slate-500 hover:text-slate-950">Clear</button></div><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-slate-700">Family<select value={family} onChange={e => { const next = e.target.value as typeof family; setFamily(next); setDesignation(steelSections.find(s => s.family === next)?.designation ?? ""); }} className={inputClass}>{sectionFamilies.map(f => <option key={f}>{f}</option>)}</select></label><label className="text-sm font-medium text-slate-700">Designation<select value={designation} onChange={e => setDesignation(e.target.value)} className={inputClass}>{familySections.map(s => <option key={s.designation} value={s.designation}>{s.designation} · {s.massKgPerM} kg/m</option>)}</select></label><DimensionInput label="Length per piece" state={standardLength} onChange={setStandardLength}/><label className="text-sm font-medium text-slate-700">Quantity<input aria-label="Pieces" inputMode="numeric" min="1" step="1" value={standardQuantity} onChange={e => setStandardQuantity(e.target.value)} className={inputClass}/></label></div></section><ResultCard title="Results" totalKg={standardResult.totalKg} details={[["Section", selectedStandard?.designation ?? "—"],["Mass", `${selectedStandard?.massKgPerM ?? 0} kg/m`],["Piece", `${standardResult.pieceKg.toFixed(4)} kg`],["Quantity", String(standardResult.pieces)],["Pounds", `${(standardResult.totalKg * 2.20462262185).toFixed(4)} lb`]]} formula="Total = section mass (kg/m) × length (m) × quantity"/></div> : <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]"><section className="border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold text-slate-950">Enter your values</h2><p className="mt-1 text-sm text-slate-500">Choose a material and shape, then enter the required dimensions.</p></div><button type="button" onClick={clear} className="text-sm font-medium text-slate-500 hover:text-slate-950">Clear</button></div><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-slate-700">Material<select value={material} onChange={e => { setMaterial(e.target.value as Material); setCalculatedResult(null); }} className={inputClass}>{Object.entries(materials).map(([name]) => <option key={name} value={name}>{name}{name === "Steel" ? " (default)" : ""}</option>)}</select></label><label className="text-sm font-medium text-slate-700">Shape<select value={shape} onChange={e => selectShape(e.target.value as MetalWeightShape)} className={inputClass}>{shapeOptions.map(option => <option key={option.value} value={option.value}>{option.label === "Sheet / plate" ? "Sheet" : option.label}</option>)}</select></label></div><ShapeDiagram shape={shape}/><div className="grid gap-4 sm:grid-cols-2"><label className="text-sm font-medium text-slate-700">Quantity<input aria-label="Quantity" inputMode="numeric" min="1" step="1" value={customQuantity} onChange={e => { setCustomQuantity(e.target.value); setCalculatedResult(null); }} className={inputClass}/></label>{definition.fields.map(field => <DimensionInput key={field.key} label={field.label} state={dimensions[field.key]} onChange={next => { updateDimension(field.key, next); setCalculatedResult(null); }}/>) }{shape !== "plate" && <DimensionInput label="Length" state={customLength} onChange={next => { setCustomLength(next); setCalculatedResult(null); }}/>}</div><div className="mt-5 border-t border-slate-200 pt-4"><p className="text-sm font-semibold text-slate-900">Formula</p><p className="mt-1 text-sm text-slate-600">{formulaFor(shape)}</p><p className="mt-1 text-xs text-slate-500">Weight = cross-sectional area × length × density × quantity.</p>{(shape === "equal-angle" || shape === "angle") && <p className="mt-2 text-xs text-slate-500">Theoretical sharp-corner geometry; rolled sections can differ because of fillets and manufacturing tolerances.</p>}{(shape === "channel" || shape === "i-beam" || shape === "h-beam" || shape === "tee" || shape === "z") && <p className="mt-2 text-xs text-slate-500">Custom structural-section geometry is an idealized rectangular model. Use standard-section mass when an exact rolled profile is available.</p>}</div><div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={calculate} className="min-h-11 bg-slate-950 px-6 text-sm font-semibold text-white hover:bg-slate-800">Calculate</button><button type="button" onClick={clear} className="min-h-11 border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-slate-50">Clear</button></div></section><ResultCard title="Results" totalKg={totalKg} details={[["Material", material],["Shape", definition.label],["Cross-section", valid ? `${area.toFixed(2)} mm²` : "—"],["Piece", valid ? `${result.pieceKg.toFixed(4)} kg` : "—"],["Quantity", valid ? String(result.pieces) : "—"],["Pounds", valid ? `${pounds.toFixed(4)} lb` : "—"]]} formula={formulaFor(shape)}/></div>}
+  return <ToolShell title="Metal Weight Calculator" description="Calculate steel and metal weight from custom dimensions, material density and shape-specific formulas." category="Engineering">
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+        <div className="mb-4 flex items-start justify-between gap-3"><div><h2 className="text-lg font-semibold text-slate-950">Enter your values</h2><p className="mt-1 text-sm text-slate-500">Choose a material and shape, then enter the required dimensions.</p></div><button type="button" onClick={clear} className="text-sm font-medium text-slate-500 hover:text-slate-950">Clear</button></div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium text-slate-700">Material<select value={material} onChange={e => { setMaterial(e.target.value as Material); setCalculatedResult(null); setError(""); }} className="mt-1.5 h-11 w-full border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100">{Object.entries(materials).map(([name]) => <option key={name} value={name}>{name}{name === "Steel" ? " (default)" : ""}</option>)}</select></label>
+          <label className="text-sm font-medium text-slate-700">Shape<select value={shape} onChange={e => selectShape(e.target.value as MetalWeightShape)} className="mt-1.5 h-11 w-full border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100">{shapeOptions.map(option => <option key={option.value} value={option.value}>{option.label === "Sheet / plate" ? "Sheet" : option.label}</option>)}</select></label>
+        </div>
+        <ShapeDiagram shape={shape}/>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="text-sm font-medium text-slate-700">Quantity<input aria-label="Quantity" inputMode="numeric" min="1" step="1" value={customQuantity} onChange={e => { setCustomQuantity(e.target.value); setCalculatedResult(null); setError(""); }} className="mt-1.5 h-11 w-full border border-slate-200 bg-white px-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"/></label>
+          {definition.fields.map(field => <DimensionInput key={field.key} label={field.label} state={dimensions[field.key]} onChange={next => updateDimension(field.key, next)}/>)}
+          {shape !== "plate" && <DimensionInput label="Length" state={customLength} onChange={next => { setCustomLength(next); setCalculatedResult(null); setError(""); }}/>} 
+        </div>
+        <div className="mt-5 border-t border-slate-200 pt-4"><p className="text-sm font-semibold text-slate-900">Formula</p><p className="mt-1 text-sm text-slate-600">{formulaFor(shape)}</p><p className="mt-1 text-xs text-slate-500">Weight = cross-sectional area × length × density × quantity.</p>{(shape === "equal-angle" || shape === "angle") && <p className="mt-2 text-xs text-slate-500">Theoretical sharp-corner geometry; rolled sections can differ because of fillets and manufacturing tolerances.</p>}{(shape === "channel" || shape === "i-beam" || shape === "h-beam" || shape === "tee" || shape === "z") && <p className="mt-2 text-xs text-slate-500">Custom structural-section geometry is an idealized rectangular model and does not include rolled-profile fillets or slopes.</p>}</div>
+        {error && <p role="alert" className="mt-4 border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">{error}</p>}
+        <div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={calculate} className="min-h-11 bg-slate-950 px-6 text-sm font-semibold text-white hover:bg-slate-800">Calculate</button><button type="button" onClick={clear} className="min-h-11 border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-slate-50">Clear</button><button type="button" onClick={reset} className="min-h-11 px-3 text-sm font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
+      </section>
+      <ResultCard title="Results" totalKg={totalKg} details={[["Material", material],["Shape", definition.label],["Cross-section", valid ? `${area.toFixed(2)} mm²` : "—"],["Piece", valid ? `${result.pieceKg.toFixed(4)} kg` : "—"],["Quantity", valid ? String(result.pieces) : "—"],["Pounds", valid ? `${pounds.toFixed(4)} lb` : "—"]]} formula={formulaFor(shape)}/>
+    </div>
   </ToolShell>;
 }
 
