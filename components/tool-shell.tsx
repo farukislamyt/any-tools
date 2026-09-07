@@ -20,9 +20,9 @@ export function ToolShell({
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 text-slate-950">
+    <div className="flex min-h-screen w-full flex-col bg-slate-50 text-slate-950">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="container flex h-12 items-center justify-between gap-3">
+        <div className="flex h-12 w-full items-center justify-between gap-3 px-3 sm:px-4">
           <Link href="/" className="shrink-0 text-base font-extrabold tracking-tight" onClick={closeSidebar}>
             Any<span className="text-blue-600">Tools</span>
           </Link>
@@ -53,13 +53,13 @@ export function ToolShell({
       <aside
         id="tool-sidebar-mobile"
         aria-label="Tools menu"
-        className={`fixed right-0 top-12 z-50 h-[calc(100vh-3rem)] w-[min(18rem,88vw)] border-l border-slate-200 bg-white p-3 shadow-xl transition-transform duration-200 sm:hidden ${sidebarOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed left-0 top-12 z-50 h-[calc(100vh-3rem)] w-fit min-w-[16rem] max-w-[88vw] overflow-y-auto border-r border-slate-200 bg-white p-3 shadow-xl transition-transform duration-200 sm:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         <ToolList currentTitle={title} onNavigate={closeSidebar} />
       </aside>
 
-      <main className="container flex-1 pb-6 pt-[4.25rem] sm:pb-8 sm:pt-[4.5rem]">
-        <nav aria-label="Breadcrumb" className="mb-3 flex min-w-0 items-center gap-1 overflow-x-auto whitespace-nowrap text-xs font-medium text-slate-500">
+      <main className="flex w-full flex-1 flex-col pb-6 pt-[4.25rem] sm:pb-8 sm:pt-[4.5rem]">
+        <nav aria-label="Breadcrumb" className="mb-3 flex min-w-0 w-full items-center gap-1 overflow-x-auto whitespace-nowrap px-3 text-xs font-medium text-slate-500 sm:px-4">
           <Link href="/" className="inline-flex shrink-0 items-center gap-1 transition hover:text-slate-950"><Home size={12} aria-hidden="true" />Home</Link>
           <ChevronRight size={12} className="shrink-0 text-slate-300" aria-hidden="true" />
           <Link href="/#tools" className="shrink-0 transition hover:text-slate-950">Tools</Link>
@@ -68,8 +68,12 @@ export function ToolShell({
           <span className="truncate text-slate-900" aria-current="page">{title}</span>
         </nav>
 
-        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_15rem]">
-          <section aria-labelledby="tool-title" className="min-w-0">
+        <div className="flex w-full items-start gap-5 px-3 sm:px-4 lg:gap-6">
+          <aside id="tool-sidebar" aria-label="Tools sidebar" className="hidden w-fit min-w-[11rem] max-w-[18rem] shrink-0 border-r border-slate-200 pr-4 lg:block">
+            <div className="sticky top-16"><ToolList currentTitle={title} /></div>
+          </aside>
+
+          <section aria-labelledby="tool-title" className="min-w-0 flex-1">
             <div className="mb-4 max-w-2xl">
               <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-600">{category ?? "Tool"}</p>
               <h1 id="tool-title" className="text-2xl font-black tracking-tight sm:text-3xl">{title}</h1>
@@ -77,15 +81,11 @@ export function ToolShell({
             </div>
             {children}
           </section>
-
-          <aside id="tool-sidebar" aria-label="Tools sidebar" className="hidden border-l border-slate-200 pl-4 lg:block">
-            <div className="sticky top-16"><ToolList currentTitle={title} /></div>
-          </aside>
         </div>
       </main>
 
       <footer className="border-t border-slate-200 bg-slate-950 text-slate-400">
-        <div className="container flex flex-col gap-1.5 py-4 text-xs sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full flex-col gap-1.5 px-3 py-4 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-4">
           <Link href="/" className="font-bold text-white" onClick={closeSidebar}>Any<span className="text-blue-400">Tools</span></Link>
           <p>Free online tools for everyday calculations.</p>
           <p>© {new Date().getFullYear()} AnyTools</p>
@@ -102,7 +102,7 @@ function ToolList({ currentTitle, onNavigate }: { currentTitle: string; onNaviga
   }, {});
 
   return (
-    <div>
+    <div className="w-max min-w-full">
       {Object.entries(grouped).map(([category, categoryTools]) => (
         <section key={category} className="mb-4 last:mb-0">
           <h2 className="mb-1.5 px-2 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-500">{category}</h2>
@@ -115,7 +115,7 @@ function ToolList({ currentTitle, onNavigate }: { currentTitle: string; onNaviga
                   href={tool.href}
                   onClick={onNavigate}
                   aria-current={active ? "page" : undefined}
-                  className={`block px-2 py-1.5 text-sm font-medium transition ${active ? "bg-slate-100 text-slate-950" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"}`}
+                  className={`block whitespace-nowrap px-2 py-1.5 text-sm font-medium transition ${active ? "bg-slate-100 text-slate-950" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"}`}
                 >
                   {tool.name}
                 </Link>
