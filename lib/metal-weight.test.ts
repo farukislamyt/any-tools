@@ -48,6 +48,28 @@ describe("metal cross-section geometry", () => {
     expect(result.pieceKg).toBeCloseTo(23.337243648, 6);
   });
 
+  it("calculates an equal angle from one equal leg dimension", () => {
+    const sideMm = toMillimetres("2", "in");
+    const thicknessMm = 5;
+    expect(crossSectionAreaMm2("equal-angle", { sideA: sideMm, wallThickness: thicknessMm })).toBeCloseTo(488.83, 2);
+  });
+
+  it("calculates 2 in × 2 in × 5 mm × 20 ft mild-steel equal angle", () => {
+    const result = calculateMetalWeightKg(
+      "equal-angle",
+      { sideA: toMillimetres("2", "in"), wallThickness: 5 },
+      toMillimetres("20", "ft"),
+      7850,
+      1,
+    );
+    expect(result.pieceKg).toBeCloseTo(23.13, 2);
+  });
+
+  it("rejects equal-angle thickness equal to or greater than the leg", () => {
+    expect(isValidMetalGeometry("equal-angle", { sideA: 50, wallThickness: 50 })).toBe(false);
+    expect(isValidMetalGeometry("equal-angle", { sideA: 50, wallThickness: 51 })).toBe(false);
+  });
+
   it("rejects incomplete plate dimensions", () => {
     expect(isValidMetalGeometry("plate", { width: 1000, length: 2000, height: 0 })).toBe(false);
     expect(calculatePlateWeightKg(1000, 2000, 0, 7850, 1).totalKg).toBe(0);
