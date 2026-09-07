@@ -7,7 +7,7 @@ import { tools } from "@/lib/tools";
 
 export function ToolShell({
   title,
-  description,
+  description: _description,
   category,
   children,
 }: {
@@ -73,11 +73,7 @@ export function ToolShell({
             <div className="sticky top-16"><ToolList currentTitle={title} /></div>
           </aside>
 
-          <section aria-labelledby="tool-title" className="min-w-0 flex-1">
-            <div className="mb-4 max-w-2xl">
-              <h1 id="tool-title" className="text-2xl font-black tracking-tight sm:text-3xl">{title}</h1>
-              <p className="mt-1.5 text-sm leading-5 text-slate-500 sm:text-[15px]">{description}</p>
-            </div>
+          <section className="min-w-0 flex-1">
             {children}
           </section>
         </div>
