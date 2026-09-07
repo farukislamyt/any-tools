@@ -75,7 +75,6 @@ export function ToolShell({
 
           <section aria-labelledby="tool-title" className="min-w-0 flex-1">
             <div className="mb-4 max-w-2xl">
-              <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.14em] text-blue-600">{category ?? "Tool"}</p>
               <h1 id="tool-title" className="text-2xl font-black tracking-tight sm:text-3xl">{title}</h1>
               <p className="mt-1.5 text-sm leading-5 text-slate-500 sm:text-[15px]">{description}</p>
             </div>
