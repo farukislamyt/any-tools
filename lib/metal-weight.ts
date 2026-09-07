@@ -1,6 +1,6 @@
 export type MetalWeightShape =
   | "round" | "square" | "rectangle" | "flat" | "hex" | "octagon" | "plate" | "pipe" | "tube"
-  | "angle" | "channel" | "i-beam" | "h-beam" | "tee" | "z" | "wire";
+  | "equal-angle" | "angle" | "channel" | "i-beam" | "h-beam" | "tee" | "z" | "wire";
 
 export type MetalWeightUnit = "mm" | "cm" | "m" | "in" | "ft";
 export type DimensionKey =
@@ -20,7 +20,8 @@ export const shapeDefinitions: Record<MetalWeightShape, { label: string; fields:
   octagon: { label: "Octagonal bar", fields: [{ key: "acrossFlats", label: "Across flats" }] },
   pipe: { label: "Round pipe", fields: [{ key: "outerDiameter", label: "Outside diameter" }, { key: "wallThickness", label: "Wall thickness" }] },
   tube: { label: "Square / rectangular tube", fields: [{ key: "width", label: "Outside width" }, { key: "height", label: "Outside height" }, { key: "wallThickness", label: "Wall thickness" }] },
-  angle: { label: "Angle / L-section", fields: [{ key: "sideA", label: "Side A" }, { key: "sideB", label: "Side B" }, { key: "wallThickness", label: "Thickness" }] },
+  "equal-angle": { label: "Equal angle / L-section", fields: [{ key: "sideA", label: "Side" }, { key: "wallThickness", label: "Thickness" }] },
+  angle: { label: "Unequal angle / L-section", fields: [{ key: "sideA", label: "Side A" }, { key: "sideB", label: "Side B" }, { key: "wallThickness", label: "Thickness" }] },
   channel: { label: "Channel / C-section", fields: [{ key: "depth", label: "Overall depth / height" }, { key: "flangeWidth", label: "Flange width" }, { key: "flangeThickness", label: "Flange thickness" }, { key: "webThickness", label: "Web thickness" }] },
   "i-beam": { label: "I-beam", fields: [{ key: "depth", label: "Overall depth / height" }, { key: "flangeWidth", label: "Flange width" }, { key: "flangeThickness", label: "Flange thickness" }, { key: "webThickness", label: "Web thickness" }] },
   "h-beam": { label: "H-beam", fields: [{ key: "depth", label: "Overall depth / height" }, { key: "flangeWidth", label: "Flange width" }, { key: "flangeThickness", label: "Flange thickness" }, { key: "webThickness", label: "Web thickness" }] },
@@ -55,14 +56,14 @@ export function isValidMetalGeometry(shape: MetalWeightShape, d: MetalDimensions
   const w = d.webThickness ?? 0;
 
   switch (shape) {
-    case "round": case "wire": return positive(a);
-    case "square": return positive(a);
+    case "round": case "wire": case "square": return positive(a);
     case "rectangle": case "flat": return positive(a, b);
     case "plate": return positive(d.width ?? 0, d.length ?? 0, d.height ?? 0);
     case "hex": case "octagon": return positive(a);
     case "pipe": return positive(a, t) && 2 * t < a;
     case "tube": return positive(a, b, t) && 2 * t < a && 2 * t < b;
-    case "angle": return positive(a, b, t) && t <= Math.min(a, b);
+    case "equal-angle": return positive(a, t) && t < a;
+    case "angle": return positive(a, b, t) && t < Math.min(a, b);
     case "channel": case "i-beam": case "h-beam": case "z":
       return positive(a, f, ft, w) && 2 * ft < a && w <= f;
     case "tee": return positive(a, f, ft, w) && ft < a && w <= f;
@@ -90,6 +91,7 @@ export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions)
     case "octagon": return a ** 2 / (2 * (1 + Math.sqrt(2)));
     case "pipe": return Math.PI * ((a / 2) ** 2 - ((a - 2 * t) / 2) ** 2);
     case "tube": return a * b - (a - 2 * t) * (b - 2 * t);
+    case "equal-angle": return t * (2 * a - t);
     case "angle": return t * (a + b - t);
     case "channel": case "i-beam": case "h-beam": case "z": return 2 * f * ft + (a - 2 * ft) * w;
     case "tee": return f * ft + (a - ft) * w;
