@@ -140,7 +140,9 @@ export default function MetalWeightPage() {
   const totalKg = result?.totalKg ?? 0;
   const pounds = totalKg * 2.20462262185;
   const area = result?.areaMm2 ?? 0;
-  const valid = Boolean(result && result.totalKg > 0 && result.pieces > 0);
+  const valid = result !== null && result.totalKg > 0 && result.pieces > 0;
+  const resultPieceKg = result?.pieceKg ?? 0;
+  const resultPieces = result?.pieces ?? 0;
 
   return <ToolShell title="Metal Weight Calculator" description="Calculate steel and metal weight from custom dimensions, material density and shape-specific formulas." category="Engineering">
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -160,7 +162,7 @@ export default function MetalWeightPage() {
         {error && <p role="alert" className="mt-4 border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">{error}</p>}
         <div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={calculate} className="min-h-11 bg-slate-950 px-6 text-sm font-semibold text-white hover:bg-slate-800">Calculate</button><button type="button" onClick={clear} className="min-h-11 border border-slate-300 bg-white px-6 text-sm font-semibold text-slate-700 hover:bg-slate-50">Clear</button><button type="button" onClick={reset} className="min-h-11 px-3 text-sm font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
       </section>
-      <ResultCard title="Results" totalKg={totalKg} details={[["Material", material],["Shape", definition.label],["Cross-section", valid ? `${area.toFixed(2)} mm²` : "—"],["Piece", valid ? `${result.pieceKg.toFixed(4)} kg` : "—"],["Quantity", valid ? String(result.pieces) : "—"],["Pounds", valid ? `${pounds.toFixed(4)} lb` : "—"]]} formula={formulaFor(shape)}/>
+      <ResultCard title="Results" totalKg={totalKg} details={[["Material", material],["Shape", definition.label],["Cross-section", valid ? `${area.toFixed(2)} mm²` : "—"],["Piece", valid ? `${resultPieceKg.toFixed(4)} kg` : "—"],["Quantity", valid ? String(resultPieces) : "—"],["Pounds", valid ? `${pounds.toFixed(4)} lb` : "—"]]} formula={formulaFor(shape)}/>
     </div>
   </ToolShell>;
 }
