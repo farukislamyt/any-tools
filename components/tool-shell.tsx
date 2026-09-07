@@ -20,7 +20,7 @@ export function ToolShell({
   const closeSidebar = () => setSidebarOpen(false);
 
   return (
-    <div className="tool-app flex min-h-[100dvh] w-full flex-col bg-slate-50 text-slate-950">
+    <div className="tool-app flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-50 text-slate-950">
       <header className="fixed inset-x-0 top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
         <div className="flex h-12 w-full items-center justify-between gap-3 px-3 sm:px-4">
           <Link href="/" className="shrink-0 text-base font-extrabold tracking-tight" onClick={closeSidebar}>
@@ -44,8 +44,8 @@ export function ToolShell({
         <ToolList currentTitle={title} onNavigate={closeSidebar} />
       </aside>
 
-      <main className="tool-main flex w-full flex-1 flex-col overflow-hidden pb-0 pt-[3rem]">
-        <nav aria-label="Breadcrumb" className="mb-2 flex min-w-0 w-full shrink-0 items-center gap-1 overflow-x-auto whitespace-nowrap px-3 pt-2 text-xs font-medium text-slate-500 sm:px-4">
+      <main className="tool-main flex min-h-0 w-full flex-1 flex-col overflow-hidden pt-[3rem]">
+        <nav aria-label="Breadcrumb" className="mb-2 flex min-h-[22px] w-full shrink-0 items-center gap-1 overflow-x-auto whitespace-nowrap px-3 pt-2 text-xs font-medium text-slate-500 sm:px-4">
           <Link href="/" className="inline-flex shrink-0 items-center gap-1 transition hover:text-slate-950"><Home size={12} aria-hidden="true" />Home</Link>
           <ChevronRight size={12} className="shrink-0 text-slate-300" aria-hidden="true" />
           <Link href="/#tools" className="shrink-0 transition hover:text-slate-950">Tools</Link>
@@ -54,11 +54,11 @@ export function ToolShell({
           <span className="truncate text-slate-900" aria-current="page">{title}</span>
         </nav>
 
-        <div className="tool-layout flex min-h-0 w-full flex-1 items-stretch gap-4 px-3 pb-3 sm:gap-5 sm:px-4">
-          <aside id="tool-sidebar" aria-label="Tools sidebar" className="hidden w-fit min-w-[11rem] max-w-[18rem] shrink-0 overflow-y-auto border-r border-slate-200 pr-4 lg:block">
-            <div className="sticky top-16"><ToolList currentTitle={title} /></div>
+        <div className="tool-layout flex min-h-0 w-full flex-1 items-stretch gap-4 overflow-hidden px-3 pb-3 sm:gap-5 sm:px-4">
+          <aside id="tool-sidebar" aria-label="Tools sidebar" className="hidden min-h-0 w-fit min-w-[11rem] max-w-[18rem] shrink-0 overflow-y-auto border-r border-slate-200 pr-4 lg:block">
+            <div className="sticky top-0"><ToolList currentTitle={title} /></div>
           </aside>
-          <section className="tool-workspace min-w-0 flex-1 overflow-y-auto overscroll-contain">
+          <section className="tool-workspace min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
             {children}
           </section>
         </div>
