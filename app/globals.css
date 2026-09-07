@@ -30,6 +30,25 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 ::selection { background: #dbeafe; color: #172554; }
 
+/* Compact calculator workspace */
+section[aria-labelledby="tool-title"] > div > section:first-child > div:first-child {
+  margin-bottom: 10px;
+}
+section[aria-labelledby="tool-title"] > div > section:first-child > div:first-child h2,
+section[aria-labelledby="tool-title"] > div > section:first-child > div:first-child p {
+  display: none;
+}
+section[aria-labelledby="tool-title"] .my-4 { display: none; }
+section[aria-labelledby="tool-title"] .gap-4 { gap: 0.625rem; }
+section[aria-labelledby="tool-title"] .mt-1\.5 { margin-top: 0.25rem; }
+section[aria-labelledby="tool-title"] input,
+section[aria-labelledby="tool-title"] select { height: 2.5rem; }
+section[aria-labelledby="tool-title"] .p-4,
+section[aria-labelledby="tool-title"] .sm\:p-5 { padding: 0.75rem; }
+section[aria-labelledby="tool-title"] .mt-5.border-t { display: none; }
+section[aria-labelledby="tool-title"] .mt-5.flex { margin-top: 0.75rem; }
+section[aria-labelledby="tool-title"] .min-h-11 { min-height: 2.5rem; }
+
 @media (max-width: 640px) {
   .container { width: min(100% - 20px, 1120px); }
 }
