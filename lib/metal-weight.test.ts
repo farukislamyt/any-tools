@@ -55,14 +55,22 @@ describe("metal cross-section geometry", () => {
   });
 
   it("calculates 2 in × 2 in × 5 mm × 20 ft mild-steel equal angle", () => {
-    const result = calculateMetalWeightKg(
-      "equal-angle",
-      { sideA: toMillimetres("2", "in"), wallThickness: 5 },
-      toMillimetres("20", "ft"),
-      7850,
-      1,
-    );
+    const result = calculateMetalWeightKg("equal-angle", { sideA: toMillimetres("2", "in"), wallThickness: 5 }, toMillimetres("20", "ft"), 7850, 1);
     expect(result.pieceKg).toBeCloseTo(23.13, 2);
+  });
+
+  it("calculates an unequal angle from two leg dimensions", () => {
+    expect(crossSectionAreaMm2("angle", { sideA: 3 * 25.4, sideB: 2 * 25.4, wallThickness: 5 })).toBeCloseTo(610, 8);
+  });
+
+  it("calculates 3 in × 2 in × 5 mm × 20 ft mild-steel unequal angle", () => {
+    const result = calculateMetalWeightKg("angle", { sideA: toMillimetres("3", "in"), sideB: toMillimetres("2", "in"), wallThickness: 5 }, toMillimetres("20", "ft"), 7850, 1);
+    expect(result.pieceKg).toBeCloseTo(29.190696, 6);
+  });
+
+  it("rejects impossible angle thickness", () => {
+    expect(isValidMetalGeometry("angle", { sideA: 50, sideB: 75, wallThickness: 50 })).toBe(false);
+    expect(isValidMetalGeometry("angle", { sideA: 50, sideB: 75, wallThickness: 51 })).toBe(false);
   });
 
   it("rejects equal-angle thickness equal to or greater than the leg", () => {
