@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { ArrowLeftRight, Banknote, Calculator, Calendar, Percent, Scale, ArrowUpRight } from "lucide-react";
+import { ArrowLeftRight, Banknote, Calculator, Calendar, Percent, Ruler, Scale, ArrowUpRight } from "lucide-react";
 import type { Tool } from "@/lib/tools";
 
-const icons = { calculator: Calculator, scale: Scale, "arrow-left-right": ArrowLeftRight, percent: Percent, calendar: Calendar, banknote: Banknote };
+const icons = { calculator: Calculator, scale: Scale, "arrow-left-right": ArrowLeftRight, percent: Percent, calendar: Calendar, banknote: Banknote, ruler: Ruler };
 
 export function ToolCard({ tool }: { tool: Tool }) {
   const Icon = icons[tool.icon as keyof typeof icons] ?? Calculator;
