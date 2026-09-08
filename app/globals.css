@@ -17,7 +17,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .container { width: min(1120px, calc(100% - 32px)); margin-inline: auto; }
 ::selection { background: #dbeafe; color: #172554; }
 
-/* Shared viewport-fit workspace: desktop tools scroll internally, mobile stays naturally scrollable. */
+/* Shared viewport-fit workspace */
 .tool-app { min-height: 100dvh; }
 .tool-main { min-height: 0; }
 .tool-layout { min-height: 0; }
@@ -25,17 +25,17 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .tool-workspace > * { min-width: 0; }
 
 /* Compact metal-weight workspace */
-section[aria-labelledby="tool-title"] > div > section:first-child > div:first-child { margin-bottom: 10px; }
-section[aria-labelledby="tool-title"] > div > section:first-child > div:first-child h2,
-section[aria-labelledby="tool-title"] > div > section:first-child > div:first-child p { display: none; }
-section[aria-labelledby="tool-title"] .my-4 { display: none; }
-section[aria-labelledby="tool-title"] .gap-4 { gap: 0.625rem; }
-section[aria-labelledby="tool-title"] .mt-1\.5 { margin-top: 0.25rem; }
-section[aria-labelledby="tool-title"] input, section[aria-labelledby="tool-title"] select { height: 2.5rem; }
-section[aria-labelledby="tool-title"] .p-4, section[aria-labelledby="tool-title"] .sm\:p-5 { padding: 0.75rem; }
-section[aria-labelledby="tool-title"] .mt-5.border-t { display: none; }
-section[aria-labelledby="tool-title"] .mt-5.flex { margin-top: 0.75rem; }
-section[aria-labelledby="tool-title"] .min-h-11 { min-height: 2.5rem; }
+section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child { margin-bottom: 10px; }
+section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child h2,
+section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child p { display: none; }
+section[data-tool="Metal Weight Calculator"] .my-4 { display: none; }
+section[data-tool="Metal Weight Calculator"] .gap-4 { gap: 0.625rem; }
+section[data-tool="Metal Weight Calculator"] .mt-1\.5 { margin-top: 0.25rem; }
+section[data-tool="Metal Weight Calculator"] input, section[data-tool="Metal Weight Calculator"] select { height: 2.5rem; }
+section[data-tool="Metal Weight Calculator"] .p-4, section[data-tool="Metal Weight Calculator"] .sm\:p-5 { padding: 0.75rem; }
+section[data-tool="Metal Weight Calculator"] .mt-5.border-t { display: none; }
+section[data-tool="Metal Weight Calculator"] .mt-5.flex { margin-top: 0.75rem; }
+section[data-tool="Metal Weight Calculator"] .min-h-11 { min-height: 2.5rem; }
 
 .document-editor h1 { margin: 1.1em 0 .45em; font-size: 2em; line-height: 1.2; font-weight: 700; }
 .document-editor h2 { margin: 1em 0 .4em; font-size: 1.5em; line-height: 1.25; font-weight: 700; }
@@ -56,12 +56,6 @@ section[aria-labelledby="tool-title"] .min-h-11 { min-height: 2.5rem; }
   .document-page-break { border: 0; height: 0; page-break-after: always; }
   .document-page-break span { display: none; }
   .editor-table td { border-color: #777; }
-}
-
-@media (max-width: 1023px) {
-  .tool-main { overflow: visible; }
-  .tool-layout { overflow: visible; }
-  .tool-workspace { overflow: visible; }
 }
 
 @media (max-width: 640px) {
