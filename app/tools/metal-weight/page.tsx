@@ -53,38 +53,50 @@ const initialDimensions = (): DimensionState => ({
 });
 
 function DimensionInput({ label, state, onChange }: { label: string; state: { value: string; unit: MetalWeightUnit }; onChange: (next: { value: string; unit: MetalWeightUnit }) => void }) {
-  return <label className="text-xs font-medium text-slate-700">{label}<div className="mt-1 grid grid-cols-[minmax(0,1fr)_60px] gap-1"><input aria-label={label} inputMode="decimal" min="0" value={state.value} onChange={e => onChange({ ...state, value: e.target.value })} className="h-9 w-full min-w-0 border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100" /><select aria-label={`${label} unit`} value={state.unit} onChange={e => onChange({ ...state, unit: e.target.value as MetalWeightUnit })} className="h-9 min-w-0 border border-slate-200 bg-white px-1 text-sm text-slate-900 outline-none focus:border-slate-900 focus:ring-2 focus:ring-slate-100">{metalWeightUnits.map(unit => <option key={unit.value} value={unit.value}>{unit.label}</option>)}</select></div></label>;
+  return <label className="text-[11px] font-medium text-slate-700">{label}<div className="mt-0.5 grid grid-cols-[minmax(0,1fr)_52px] gap-1"><input aria-label={label} inputMode="decimal" min="0" value={state.value} onChange={e => onChange({ ...state, value: e.target.value })} className="h-8 w-full min-w-0 border border-slate-200 bg-white px-2 text-sm text-slate-900 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-100" /><select aria-label={`${label} unit`} value={state.unit} onChange={e => onChange({ ...state, unit: e.target.value as MetalWeightUnit })} className="h-8 min-w-0 border border-slate-200 bg-white px-1 text-xs text-slate-900 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-100">{metalWeightUnits.map(unit => <option key={unit.value} value={unit.value}>{unit.label}</option>)}</select></div></label>;
 }
 
-function DiagramFrame({ children, label }: { children: ReactNode; label: string }) { return <div className="mx-auto my-4 flex max-w-md justify-center border-y border-slate-100 bg-slate-50/60 px-4 py-4" aria-label={label}>{children}</div>; }
+function DiagramFrame({ children, label }: { children: ReactNode; label: string }) {
+  return <div className="flex h-[112px] items-center justify-center bg-slate-50/70 px-2 py-1" aria-label={label}>{children}</div>;
+}
+
 function ShapeDiagram({ shape }: { shape: MetalWeightShape }) {
   const common = { fill: "white", stroke: "currentColor", strokeWidth: 2 };
-  if (shape === "plate") return <DiagramFrame label="Sheet dimensions diagram"><svg viewBox="0 0 360 170" className="h-auto w-full max-w-[360px]" role="img"><title>Sheet dimensions: T, W and L</title><polygon points="75,62 245,62 300,30 130,30" {...common}/><polygon points="75,62 245,62 245,95 75,95" {...common}/><polygon points="245,62 300,30 300,63 245,95" {...common}/><text x="160" y="133" textAnchor="middle">W</text><text x="287" y="91">L</text><text x="53" y="83">T</text></svg></DiagramFrame>;
-  if (shape === "equal-angle" || shape === "angle") return <DiagramFrame label="Angle section dimensions diagram"><svg viewBox="0 0 360 190" className="h-auto w-full max-w-[360px]" role="img"><title>Angle section dimensions</title><path d="M90 145V45h28v72h150v28H90Z" {...common}/><text x="73" y="98">A</text><text x="190" y="166">{shape === "equal-angle" ? "A" : "B"}</text><text x="102" y="39">t</text></svg></DiagramFrame>;
-  if (shape === "round" || shape === "wire") return <DiagramFrame label="Round bar diameter diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Round bar diameter D</title><circle cx="120" cy="70" r="45" {...common}/><line x1="75" y1="70" x2="165" y2="70" stroke="currentColor"/><text x="120" y="55" textAnchor="middle">D</text><line x1="180" y1="70" x2="310" y2="70" stroke="currentColor"/><text x="245" y="60" textAnchor="middle">L</text></svg></DiagramFrame>;
-  if (shape === "square") return <DiagramFrame label="Square bar dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Square bar side A and length L</title><rect x="75" y="35" width="80" height="80" {...common}/><text x="115" y="28" textAnchor="middle">A</text><line x1="175" y1="75" x2="305" y2="75" stroke="currentColor"/><text x="240" y="65" textAnchor="middle">L</text></svg></DiagramFrame>;
-  if (shape === "flat") return <DiagramFrame label="Flat bar dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Flat bar width W, thickness T and length L</title><rect x="75" y="60" width="120" height="25" {...common}/><text x="135" y="52" textAnchor="middle">W</text><text x="60" y="77">T</text><line x1="205" y1="72" x2="310" y2="72" stroke="currentColor"/><text x="258" y="62" textAnchor="middle">L</text></svg></DiagramFrame>;
-  if (shape === "pipe") return <DiagramFrame label="Pipe dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>Pipe outside diameter D and wall thickness T</title><circle cx="120" cy="70" r="48" {...common}/><circle cx="120" cy="70" r="34" fill="none" stroke="currentColor" strokeWidth="2"/><text x="120" y="57" textAnchor="middle">OD</text><text x="120" y="78" textAnchor="middle">ID</text><text x="175" y="50">T</text><line x1="180" y1="70" x2="310" y2="70" stroke="currentColor"/><text x="245" y="60" textAnchor="middle">L</text></svg></DiagramFrame>;
-  if (shape === "tube" || shape === "rectangle") return <DiagramFrame label={`${shapeDefinitions[shape].label} dimensions diagram`}><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>{shapeDefinitions[shape].label} width W, height H and length L</title><rect x="70" y="35" width="100" height="75" {...common}/>{shape === "tube" && <rect x="83" y="48" width="74" height="49" fill="none" stroke="currentColor"/>}<text x="120" y="28" textAnchor="middle">W</text><text x="55" y="77">H</text><line x1="185" y1="72" x2="310" y2="72" stroke="currentColor"/><text x="248" y="62" textAnchor="middle">L</text></svg></DiagramFrame>;
-  if (shape === "hex" || shape === "octagon") return <DiagramFrame label="Polygon bar dimensions diagram"><svg viewBox="0 0 360 150" className="h-auto w-full max-w-[360px]" role="img"><title>{shapeDefinitions[shape].label} dimension and length</title><polygon points="120,25 160,48 160,92 120,115 80,92 80,48" {...common}/><text x="120" y="77" textAnchor="middle">{shape === "hex" ? "AC" : "AF"}</text><line x1="185" y1="70" x2="310" y2="70" stroke="currentColor"/><text x="248" y="60" textAnchor="middle">L</text></svg></DiagramFrame>;
-  return <DiagramFrame label={`${shapeDefinitions[shape].label} diagram`}><svg viewBox="0 0 360 160" className="h-auto w-full max-w-[360px]" role="img"><title>{shapeDefinitions[shape].label} dimensions</title><path d="M70 35h115v22h-65v23h65v22H70Z" {...common}/><text x="128" y="132" textAnchor="middle">Section dimensions</text><line x1="205" y1="80" x2="310" y2="80" stroke="currentColor"/><text x="258" y="70" textAnchor="middle">L</text></svg></DiagramFrame>;
+  const text = "fill-current text-[11px] font-medium";
+  if (shape === "plate") return <DiagramFrame label="Sheet dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Sheet dimensions W, L and T</title><polygon points="55,38 190,38 235,18 100,18" {...common}/><polygon points="55,38 190,38 190,62 55,62" {...common}/><polygon points="190,38 235,18 235,42 190,62" {...common}/><text x="122" y="80" textAnchor="middle" className={text}>W</text><text x="224" y="58" className={text}>L</text><text x="45" y="53" className={text}>T</text></svg></DiagramFrame>;
+  if (shape === "round" || shape === "wire") return <DiagramFrame label="Round bar dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Round bar diameter D and length L</title><circle cx="75" cy="50" r="30" {...common}/><line x1="45" y1="50" x2="105" y2="50" stroke="currentColor"/><text x="75" y="43" textAnchor="middle" className={text}>D</text><line x1="125" y1="50" x2="255" y2="50" stroke="currentColor"/><text x="190" y="43" textAnchor="middle" className={text}>L</text></svg></DiagramFrame>;
+  if (shape === "square") return <DiagramFrame label="Square bar dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Square bar side A and length L</title><rect x="45" y="20" width="55" height="55" {...common}/><text x="72" y="15" textAnchor="middle" className={text}>A</text><line x1="120" y1="48" x2="255" y2="48" stroke="currentColor"/><text x="188" y="41" textAnchor="middle" className={text}>L</text></svg></DiagramFrame>;
+  if (shape === "flat") return <DiagramFrame label="Flat bar dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Flat bar width W, thickness T and length L</title><rect x="42" y="38" width="85" height="22" {...common}/><text x="84" y="32" textAnchor="middle" className={text}>W</text><text x="32" y="53" className={text}>T</text><line x1="145" y1="49" x2="255" y2="49" stroke="currentColor"/><text x="200" y="42" textAnchor="middle" className={text}>L</text></svg></DiagramFrame>;
+  if (shape === "pipe") return <DiagramFrame label="Pipe dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Pipe OD, ID, wall thickness T and length L</title><circle cx="72" cy="50" r="34" {...common}/><circle cx="72" cy="50" r="24" fill="none" stroke="currentColor" strokeWidth="2"/><text x="72" y="46" textAnchor="middle" className={text}>OD</text><text x="72" y="59" textAnchor="middle" className={text}>ID</text><text x="108" y="29" className={text}>T</text><line x1="125" y1="50" x2="255" y2="50" stroke="currentColor"/><text x="190" y="43" textAnchor="middle" className={text}>L</text></svg></DiagramFrame>;
+  if (shape === "tube") return <DiagramFrame label="Tube dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Tube width W, height H, wall T and length L</title><rect x="42" y="18" width="75" height="58" {...common}/><rect x="51" y="27" width="57" height="40" fill="none" stroke="currentColor"/><text x="80" y="13" textAnchor="middle" className={text}>W</text><text x="29" y="50" className={text}>H</text><text x="116" y="32" className={text}>T</text><line x1="135" y1="48" x2="255" y2="48" stroke="currentColor"/><text x="195" y="41" textAnchor="middle" className={text}>L</text></svg></DiagramFrame>;
+  if (shape === "rectangle") return <DiagramFrame label="Rectangle bar dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Rectangle bar width A, height B and length L</title><rect x="42" y="20" width="75" height="58" {...common}/><text x="80" y="14" textAnchor="middle" className={text}>A</text><text x="29" y="51" className={text}>B</text><line x1="135" y1="49" x2="255" y2="49" stroke="currentColor"/><text x="195" y="42" textAnchor="middle" className={text}>L</text></svg></DiagramFrame>;
+  if (shape === "hex" || shape === "octagon") return <DiagramFrame label="Polygon bar dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Polygon bar section and length</title><polygon points="72,16 101,33 101,67 72,84 43,67 43,33" {...common}/><text x="72" y="53" textAnchor="middle" className={text}>{shape === "hex" ? "AC" : "AF"}</text><line x1="125" y1="50" x2="255" y2="50" stroke="currentColor"/><text x="190" y="43" textAnchor="middle" className={text}>L</text></svg></DiagramFrame>;
+  if (shape === "equal-angle" || shape === "angle") return <DiagramFrame label="Angle section dimensions diagram"><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>Angle section dimensions</title><path d="M50 78V20h15v43h120v15H50Z" {...common}/><text x="40" y="51" className={text}>{shape === "angle" ? "A" : "A"}</text><text x="120" y="94" className={text}>{shape === "angle" ? "B" : "A"}</text><text x="57" y="16" className={text}>t</text></svg></DiagramFrame>;
+  const paths: Record<string, string> = {
+    channel: "M45 20h115v12H60v36h100v12H45Z",
+    "i-beam": "M45 18h125v14h-54v36h54v14H45V68h54V32H45Z",
+    "h-beam": "M45 18h125v14h-48v36h48v14H45V68h48V32H45Z",
+    tee: "M45 18h125v14h-55v50H90V32H45Z",
+    z: "M55 18h110v14H75v24h70v14H75v12H55V70h70V46H55Z",
+  };
+  return <DiagramFrame label={`${shapeDefinitions[shape].label} dimensions diagram`}><svg viewBox="0 0 300 100" className="h-[100px] w-full max-w-[300px]" role="img"><title>{shapeDefinitions[shape].label} dimensions</title><path d={paths[shape]} {...common}/><text x="185" y="28" className={text}>H</text><text x="102" y="94" className={text}>B</text><text x="122" y="48" className={text}>Tf</text><text x="98" y="63" className={text}>Tw</text></svg></DiagramFrame>;
 }
 
 function formulaFor(shape: MetalWeightShape) {
   switch (shape) {
-    case "round": case "wire": return "Area = π × D² / 4";
-    case "square": return "Area = A²";
-    case "rectangle": return "Area = A × B";
-    case "flat": return "Area = W × T";
-    case "plate": return "Volume = W × L × T";
-    case "hex": return "Area = 3√3 × AC² / 8";
-    case "octagon": return "Area = AF² / [2 × (1 + √2)]";
-    case "pipe": return "Area = π × (OD² − ID²) / 4";
-    case "tube": return "Area = WH − (W − 2t)(H − 2t)";
-    case "equal-angle": return "Area = t × (2A − t)";
-    case "angle": return "Area = t × (A + B − t)";
-    case "channel": case "i-beam": case "h-beam": case "z": return "Area = 2 × flange width × flange thickness + web area";
-    case "tee": return "Area = flange area + web area";
+    case "round": case "wire": return "A = πD² / 4";
+    case "square": return "A = A²";
+    case "rectangle": return "A = A × B";
+    case "flat": return "A = W × T";
+    case "plate": return "V = W × L × T";
+    case "hex": return "A = 3√3 × AC² / 8";
+    case "octagon": return "A = 2(√2 − 1) × AF²";
+    case "pipe": return "A = π(OD² − ID²) / 4";
+    case "tube": return "A = WH − (W − 2T)(H − 2T)";
+    case "equal-angle": return "A = T(2A − T)";
+    case "angle": return "A = T(A + B − T)";
+    case "channel": case "i-beam": case "h-beam": case "z": return "A = 2BTf + (H − 2Tf)Tw";
+    case "tee": return "A = BTf + (H − Tf)Tw";
   }
 }
 
@@ -108,75 +120,50 @@ export default function MetalWeightPage() {
     ? calculatePlateWeightKg(normalizedDimensions.width ?? 0, normalizedDimensions.length ?? 0, normalizedDimensions.height ?? 0, materials[material], quantity)
     : calculateMetalWeightKg(shape, normalizedDimensions, lengthMm, materials[material], quantity), [shape, normalizedDimensions, lengthMm, material, quantity]);
 
-  const updateDimension = (key: DimensionKey, next: { value: string; unit: MetalWeightUnit }) => {
-    setDimensions(current => ({ ...current, [key]: next }));
-    setCalculatedResult(null);
-    setError("");
-  };
-  const selectShape = (next: MetalWeightShape) => {
-    setShape(next);
-    setDimensions(current => ({ ...current, ...presets[next] }));
-    setCustomLength({ value: "20", unit: "ft" });
-    setCalculatedResult(null);
-    setError("");
-  };
+  const invalidate = () => { setCalculatedResult(null); setError(""); };
+  const updateDimension = (key: DimensionKey, next: { value: string; unit: MetalWeightUnit }) => { setDimensions(current => ({ ...current, [key]: next })); invalidate(); };
+  const selectShape = (next: MetalWeightShape) => { setShape(next); setDimensions(current => ({ ...current, ...presets[next] })); setCustomLength({ value: "20", unit: "ft" }); invalidate(); };
   const calculate = () => {
-    if (!geometryValid) {
-      setCalculatedResult(null);
-      setError(shape === "pipe" ? "Enter a valid outside diameter and wall thickness. Wall thickness must be less than half the outside diameter." : shape === "tube" ? "Enter valid outside width, height and wall thickness. Wall thickness must be less than half of both outside dimensions." : "Enter positive values for all required dimensions and length.");
-      return;
-    }
-    if (!Number.isInteger(quantity) || quantity < 1) {
-      setCalculatedResult(null);
-      setError("Quantity must be a whole number greater than or equal to 1.");
-      return;
-    }
-    setError("");
-    setCalculatedResult(currentResult);
+    if (!geometryValid) { setCalculatedResult(null); setError(shape === "pipe" ? "Use a wall thickness less than half the outside diameter." : shape === "tube" ? "Use a wall thickness less than half of both outside dimensions." : "Enter positive values for all required dimensions and length."); return; }
+    if (!Number.isInteger(quantity) || quantity < 1) { setCalculatedResult(null); setError("Quantity must be a whole number of 1 or more."); return; }
+    setError(""); setCalculatedResult(currentResult);
   };
-  const clear = () => { setCalculatedResult(null); setError(""); };
-  const reset = () => { setMaterial("Steel"); setShape("plate"); setDimensions(initialDimensions()); setCustomLength({ value: "20", unit: "ft" }); setCustomQuantity("1"); setCalculatedResult(null); setError(""); };
+  const reset = () => { setMaterial("Steel"); setShape("plate"); setDimensions(initialDimensions()); setCustomLength({ value: "20", unit: "ft" }); setCustomQuantity("1"); invalidate(); };
   const result = calculatedResult;
   const totalKg = result?.totalKg ?? 0;
-  const pounds = totalKg * 2.20462262185;
-  const area = result?.areaMm2 ?? 0;
   const valid = result !== null && result.totalKg > 0 && result.pieces > 0;
-  const resultPieceKg = result?.pieceKg ?? 0;
-  const resultPieces = result?.pieces ?? 0;
+  const pounds = totalKg * 2.20462262185;
 
   return <ToolShell title="Metal Weight Calculator" description="Calculate steel and metal weight from custom dimensions, material density and shape-specific formulas." category="Engineering">
-    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <section className="border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
-        <div className="mb-3 flex items-start justify-between gap-3"><div><h2 className="text-base font-semibold text-slate-950">Enter your values</h2><p className="mt-0.5 text-xs text-slate-500">Start with the shape diagram, then choose material and shape, quantity, and dimensions.</p></div><button type="button" onClick={clear} className="text-xs font-medium text-slate-500 hover:text-slate-950">Clear</button></div>
+    <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_270px]">
+      <section className="border border-slate-200 bg-white p-2.5 shadow-sm sm:p-3">
+        <div className="mb-2 flex items-center justify-between gap-2"><div><h2 className="text-sm font-semibold text-slate-950">Metal weight</h2><p className="text-[10px] text-slate-500">Select material, shape, quantity and dimensions.</p></div><button type="button" onClick={reset} className="text-[11px] font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
 
-        <ShapeDiagram shape={shape}/>
+        <div className="mb-2 border border-slate-200 bg-slate-50 p-1.5"><div className="mb-1 flex items-center justify-between"><span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Shape diagram</span><span className="text-[10px] text-slate-500">{definition.label}</span></div><ShapeDiagram shape={shape}/></div>
 
-        <div className="mb-3 grid gap-2.5 sm:grid-cols-2">
-          <label className="text-xs font-medium text-slate-700">Material<select value={material} onChange={e => { setMaterial(e.target.value as Material); setCalculatedResult(null); setError(""); }} className="mt-1 h-9 w-full border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100">{Object.entries(materials).map(([name]) => <option key={name} value={name}>{name}{name === "Steel" ? " (default)" : ""}</option>)}</select></label>
-          <label className="text-xs font-medium text-slate-700">Shape<select value={shape} onChange={e => selectShape(e.target.value as MetalWeightShape)} className="mt-1 h-9 w-full border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100">{shapeOptions.map(option => <option key={option.value} value={option.value}>{option.label === "Sheet / plate" ? "Sheet" : option.label}</option>)}</select></label>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="text-[11px] font-medium text-slate-700">Material<select value={material} onChange={e => { setMaterial(e.target.value as Material); invalidate(); }} className="mt-0.5 h-8 w-full border border-slate-200 bg-white px-2 text-xs text-slate-900 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-100">{Object.entries(materials).map(([name]) => <option key={name} value={name}>{name}{name === "Steel" ? " (default)" : ""}</option>)}</select></label>
+          <label className="text-[11px] font-medium text-slate-700">Shape<select value={shape} onChange={e => selectShape(e.target.value as MetalWeightShape)} className="mt-0.5 h-8 w-full border border-slate-200 bg-white px-2 text-xs text-slate-900 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-100">{shapeOptions.map(option => <option key={option.value} value={option.value}>{option.label === "Sheet / plate" ? "Sheet / plate" : option.label}</option>)}</select></label>
         </div>
 
-        <div className="mb-3">
-          <label className="text-xs font-medium text-slate-700">Quantity<input aria-label="Quantity" inputMode="numeric" min="1" step="1" value={customQuantity} onChange={e => { setCustomQuantity(e.target.value); setCalculatedResult(null); setError(""); }} className="mt-1 h-9 w-full border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100 sm:max-w-[220px]"/></label>
-        </div>
-
-        <div>
-          <div className="mb-2"><p className="text-xs font-semibold text-slate-900">Dimensions</p><p className="mt-0.5 text-[11px] text-slate-500">Enter the section dimensions and length. Units can be mixed.</p></div>
-          <div className="grid gap-2.5 sm:grid-cols-2">
-            {definition.fields.map(field => <DimensionInput key={field.key} label={field.label} state={dimensions[field.key]} onChange={next => updateDimension(field.key, next)}/>)}
-            {shape !== "plate" && <DimensionInput label="Length" state={customLength} onChange={next => { setCustomLength(next); setCalculatedResult(null); setError(""); }}/>} 
+        <div className="mt-2 border-t border-slate-100 pt-2">
+          <div className="mb-1 flex items-center justify-between"><span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Quantity & dimensions</span><span className="text-[10px] text-slate-400">{definition.fields.length + (shape === "plate" ? 0 : 1)} inputs</span></div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <label className="text-[11px] font-medium text-slate-700">Quantity<input aria-label="Quantity" inputMode="numeric" min="1" step="1" value={customQuantity} onChange={e => { setCustomQuantity(e.target.value); invalidate(); }} className="mt-0.5 h-8 w-full border border-slate-200 bg-white px-2 text-sm text-slate-900 outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-100"/></label>
+            {definition.fields.map(field => <DimensionInput key={field.key} label={field.label} state={dimensions[field.key]} onChange={next => updateDimension(field.key, next)}/>) }
+            {shape !== "plate" && <DimensionInput label="Length" state={customLength} onChange={next => { setCustomLength(next); invalidate(); }}/>} 
           </div>
         </div>
 
-        <div className="mt-3 border-t border-slate-200 pt-3"><p className="text-xs font-semibold text-slate-900">Formula</p><p className="mt-0.5 text-xs text-slate-600">{formulaFor(shape)}</p><p className="mt-0.5 text-[11px] text-slate-500">Weight = cross-sectional area × length × density × quantity.</p>{(shape === "equal-angle" || shape === "angle") && <p className="mt-1.5 text-[11px] text-slate-500">Theoretical sharp-corner geometry; rolled sections can differ because of fillets and manufacturing tolerances.</p>}{(shape === "channel" || shape === "i-beam" || shape === "h-beam" || shape === "tee" || shape === "z") && <p className="mt-1.5 text-[11px] text-slate-500">Custom structural-section geometry is an idealized rectangular model and does not include rolled-profile fillets or slopes.</p>}</div>
-        {error && <p role="alert" className="mt-3 border border-red-200 bg-red-50 px-2.5 py-2 text-xs text-red-700">{error}</p>}
-        <div className="mt-3 flex flex-wrap gap-1.5"><button type="button" onClick={calculate} className="min-h-9 bg-slate-950 px-5 text-xs font-semibold text-white hover:bg-slate-800">Calculate</button><button type="button" onClick={clear} className="min-h-9 border border-slate-300 bg-white px-5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Clear</button><button type="button" onClick={reset} className="min-h-9 px-2.5 text-xs font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2"><div><p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Formula</p><p className="text-[11px] text-slate-700">{formulaFor(shape)}</p></div><button type="button" onClick={calculate} className="min-h-8 bg-slate-950 px-4 text-[11px] font-semibold text-white hover:bg-slate-800">Calculate weight</button></div>
+        {error && <p role="alert" className="mt-2 border border-red-200 bg-red-50 px-2 py-1.5 text-[11px] text-red-700">{error}</p>}
       </section>
-      <ResultCard title="Results" totalKg={totalKg} details={[["Material", material],["Shape", definition.label],["Cross-section", valid ? `${area.toFixed(2)} mm²` : "—"],["Piece", valid ? `${resultPieceKg.toFixed(4)} kg` : "—"],["Quantity", valid ? String(resultPieces) : "—"],["Pounds", valid ? `${pounds.toFixed(4)} lb` : "—"]]} formula={formulaFor(shape)}/>
+
+      <ResultCard totalKg={totalKg} material={material} shape={definition.label} area={result?.areaMm2 ?? 0} pieceKg={result?.pieceKg ?? 0} pieces={result?.pieces ?? 0} pounds={pounds} valid={valid} formula={formulaFor(shape)}/>
     </div>
   </ToolShell>;
 }
 
-function ResultCard({ title, totalKg, details, formula }: { title: string; totalKg: number; details: [string, string][]; formula: string }) {
-  return <aside className="h-fit bg-slate-950 p-4 text-white shadow-sm sm:p-5 lg:sticky lg:top-4"><p className="text-xs text-slate-400">{title}</p><div className="mt-1 text-3xl font-bold tracking-tight sm:text-4xl">{totalKg.toFixed(4)} <span className="text-base font-medium text-slate-400">kg</span></div><p className="mt-0.5 text-xs text-slate-500">{(totalKg / 1000).toFixed(4)} tonnes</p><div className="mt-4 border-t border-slate-800 pt-3 text-xs">{details.map(([label, value]) => <div key={label} className="mt-2 flex justify-between gap-3 first:mt-0"><span className="text-slate-400">{label}</span><span className="max-w-[55%] text-right">{value}</span></div>)}</div><div className="mt-4 border-t border-slate-800 pt-3"><p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Formula</p><p className="mt-1.5 text-[11px] leading-4 text-slate-300">{formula}</p></div></aside>;
+function ResultCard({ totalKg, material, shape, area, pieceKg, pieces, pounds, valid, formula }: { totalKg: number; material: string; shape: string; area: number; pieceKg: number; pieces: number; pounds: number; valid: boolean; formula: string }) {
+  return <aside className="h-fit bg-slate-950 p-3 text-white shadow-sm lg:sticky lg:top-3"><div className="flex items-baseline justify-between gap-2"><p className="text-[10px] uppercase tracking-wide text-slate-400">Total weight</p><p className="text-[10px] text-slate-500">{(totalKg / 1000).toFixed(3)} t</p></div><div className="mt-0.5 text-3xl font-bold tracking-tight">{totalKg.toFixed(3)} <span className="text-sm font-medium text-slate-400">kg</span></div><div className="mt-3 space-y-1.5 border-t border-slate-800 pt-2.5 text-[11px]"><div className="flex justify-between gap-2"><span className="text-slate-400">Material</span><span className="text-right">{material}</span></div><div className="flex justify-between gap-2"><span className="text-slate-400">Shape</span><span className="text-right">{shape}</span></div><div className="flex justify-between gap-2"><span className="text-slate-400">Area</span><span>{valid ? `${area.toFixed(2)} mm²` : "—"}</span></div><div className="flex justify-between gap-2"><span className="text-slate-400">Per piece</span><span>{valid ? `${pieceKg.toFixed(3)} kg` : "—"}</span></div><div className="flex justify-between gap-2"><span className="text-slate-400">Quantity</span><span>{valid ? pieces : "—"}</span></div><div className="flex justify-between gap-2"><span className="text-slate-400">Pounds</span><span>{valid ? `${pounds.toFixed(3)} lb` : "—"}</span></div></div><div className="mt-3 border-t border-slate-800 pt-2.5"><p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Formula</p><p className="mt-1 text-[11px] leading-4 text-slate-300">{formula}</p></div></aside>;
 }
