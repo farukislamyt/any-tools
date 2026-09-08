@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlignCenter, AlignLeft, AlignRight, Bold, Copy, FileDown, Highlighter, ImagePlus,
   IndentDecrease, IndentIncrease, Italic, Link2, List, ListOrdered, Minus,
-  MoreHorizontal, Printer, Redo2, Search, Strikethrough, Subscript, Superscript,
+  MoreHorizontal, Printer, Redo2, Save, Search, Strikethrough, Subscript, Superscript,
   Table2, Trash2, Underline, Undo2, X
 } from "lucide-react";
 import { ToolShell } from "@/components/tool-shell";
@@ -12,22 +12,15 @@ import { ToolShell } from "@/components/tool-shell";
 const STORAGE_KEY = "anytools-document-editor-documents";
 const LEGACY_STORAGE_KEY = "anytools-document-editor";
 
-type DocumentItem = {
-  id: string;
-  title: string;
-  html: string;
-  createdAt: number;
-  updatedAt: number;
-};
-
+type DocumentItem = { id: string; title: string; html: string; createdAt: number; updatedAt: number };
 type CommandButtonProps = { label: string; onClick: () => void; children: React.ReactNode };
 
 function ToolbarButton({ label, onClick, children }: CommandButtonProps) {
-  return (
-    <button type="button" title={label} aria-label={label} onMouseDown={(e) => e.preventDefault()} onClick={onClick} className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-slate-700 transition hover:bg-slate-100 active:bg-slate-200">
-      {children}
-    </button>
-  );
+  return <button type="button" title={label} aria-label={label} onMouseDown={(e) => e.preventDefault()} onClick={onClick} className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-slate-700 transition hover:bg-slate-100 active:bg-slate-200">{children}</button>;
+}
+
+function ActionButton({ label, onClick, children, danger = false }: CommandButtonProps & { danger?: boolean }) {
+  return <button type="button" title={label} aria-label={label} onMouseDown={(e) => e.preventDefault()} onClick={onClick} className={`inline-flex h-8 shrink-0 items-center gap-1.5 px-2 text-xs font-medium transition ${danger ? "text-red-600 hover:bg-red-50" : "text-slate-700 hover:bg-slate-100"}`}>{children}<span className="hidden sm:inline">{label}</span></button>;
 }
 
 function makeDocument(title = "Untitled document", html = "<p><br></p>"): DocumentItem {
@@ -86,9 +79,7 @@ export default function DocumentEditorPage() {
       try {
         const parsed = JSON.parse(raw) as DocumentItem[];
         if (Array.isArray(parsed)) loaded = parsed.filter((item) => item?.id && typeof item.html === "string");
-      } catch {
-        localStorage.removeItem(STORAGE_KEY);
-      }
+      } catch { localStorage.removeItem(STORAGE_KEY); }
     }
     if (!loaded.length) {
       const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
@@ -96,9 +87,7 @@ export default function DocumentEditorPage() {
         try {
           const legacy = JSON.parse(legacyRaw) as { title?: string; html?: string };
           loaded = [makeDocument(legacy.title || "Untitled document", legacy.html || "<p><br></p>")];
-        } catch {
-          // Ignore malformed legacy data.
-        }
+        } catch { /* Ignore malformed legacy data. */ }
       }
     }
     if (!loaded.length) loaded = [makeDocument()];
@@ -333,22 +322,18 @@ export default function DocumentEditorPage() {
     URL.revokeObjectURL(url);
   };
 
+  const printDocument = () => {
+    save();
+    window.print();
+  };
+
   return (
     <ToolShell title="Document Editor" description="A lightweight Word-style document editor." category="Writing">
       <div className="document-editor-app flex min-h-0 w-full flex-col">
         <div className="mb-2 flex min-h-10 shrink-0 items-end border-b border-slate-200 bg-white print:hidden">
           <div className="flex min-w-0 flex-1 items-end overflow-x-auto" role="tablist" aria-label="Open documents">
             {documents.map((doc) => (
-              <button
-                key={doc.id}
-                type="button"
-                role="tab"
-                aria-selected={doc.id === activeId}
-                onClick={() => selectDocument(doc)}
-                onDoubleClick={() => renameDocument(doc.id)}
-                title={`${doc.title} — double-click to rename`}
-                className={`group relative flex h-10 max-w-56 min-w-28 shrink-0 items-center gap-2 border-r border-slate-200 px-3 text-left text-xs transition ${doc.id === activeId ? "bg-white font-semibold text-slate-900" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
-              >
+              <button key={doc.id} type="button" role="tab" aria-selected={doc.id === activeId} onClick={() => selectDocument(doc)} onDoubleClick={() => renameDocument(doc.id)} title={`${doc.title} — double-click to rename`} className={`group relative flex h-10 max-w-56 min-w-28 shrink-0 items-center gap-2 border-r border-slate-200 px-3 text-left text-xs transition ${doc.id === activeId ? "bg-white font-semibold text-slate-900" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}>
                 <span className="min-w-0 flex-1 truncate">{doc.title}</span>
                 {doc.id === activeId ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600" /> : null}
               </button>
@@ -359,6 +344,12 @@ export default function DocumentEditorPage() {
 
         <div className="mb-2 flex min-h-0 shrink-0 flex-col border-y border-slate-200 bg-white">
           <div className="flex w-full flex-wrap items-center gap-0.5 px-1 py-1 print:hidden">
+            <ActionButton label="Save" onClick={save}><Save size={15}/></ActionButton>
+            <ActionButton label="Duplicate" onClick={duplicateDocument}><Copy size={15}/></ActionButton>
+            <ActionButton label="Delete" onClick={deleteDocument} danger><Trash2 size={15}/></ActionButton>
+            <ActionButton label="Print" onClick={printDocument}><Printer size={15}/></ActionButton>
+            <ActionButton label="Export HTML" onClick={exportHtml}><FileDown size={15}/></ActionButton>
+            <span className="mx-1 h-5 w-px bg-slate-200" />
             <ToolbarButton label="Undo" onClick={() => command("undo")}><Undo2 size={16}/></ToolbarButton>
             <ToolbarButton label="Redo" onClick={() => command("redo")}><Redo2 size={16}/></ToolbarButton>
             <ToolbarButton label="Find and replace" onClick={() => { rememberSelection(); setFindOpen((value) => !value); }}><Search size={16}/></ToolbarButton>
@@ -407,7 +398,7 @@ export default function DocumentEditorPage() {
             <div ref={editorRef} contentEditable suppressContentEditableWarning spellCheck className="document-editor min-h-[60vh] text-[15px] leading-7 text-slate-900 outline-none sm:min-h-[950px]" onInput={() => { updateStats(); scheduleSave(); }} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); } if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") { e.preventDefault(); rememberSelection(); setFindOpen(true); } }} onMouseUp={rememberSelection} onKeyUp={rememberSelection} onBlur={rememberSelection} aria-label="Document editor"><p><br/></p></div>
           </article>
         </div>
-        <div className="mt-2 flex shrink-0 items-center justify-end gap-4 px-1 text-xs text-slate-500 print:hidden"><span>{stats.words} words</span><span>{stats.characters} characters</span><span>{documents.length} document{documents.length === 1 ? "" : "s"}</span></div>
+        <div className="mt-2 flex shrink-0 items-center justify-end gap-4 px-1 text-xs text-slate-500 print:hidden"><span>{saved ? "Saved" : "Unsaved changes"}</span><span>{stats.words} words</span><span>{stats.characters} characters</span><span>{documents.length} document{documents.length === 1 ? "" : "s"}</span></div>
       </div>
     </ToolShell>
   );
