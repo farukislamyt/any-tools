@@ -24,14 +24,7 @@ type CommandButtonProps = { label: string; onClick: () => void; children: React.
 
 function ToolbarButton({ label, onClick, children }: CommandButtonProps) {
   return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={onClick}
-      className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-slate-700 transition hover:bg-slate-100 active:bg-slate-200"
-    >
+    <button type="button" title={label} aria-label={label} onMouseDown={(e) => e.preventDefault()} onClick={onClick} className="inline-flex h-8 w-8 shrink-0 items-center justify-center text-slate-700 transition hover:bg-slate-100 active:bg-slate-200">
       {children}
     </button>
   );
@@ -73,11 +66,7 @@ export default function DocumentEditorPage() {
     if (!activeId || !editorRef.current) return;
     const now = Date.now();
     setDocuments((current) => {
-      const next = current.map((doc) =>
-        doc.id === activeId
-          ? { ...doc, title: title.trim() || "Untitled document", html: editorRef.current?.innerHTML ?? "", updatedAt: now }
-          : doc,
-      );
+      const next = current.map((doc) => doc.id === activeId ? { ...doc, title: title.trim() || "Untitled document", html: editorRef.current?.innerHTML ?? "", updatedAt: now } : doc);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       return next;
     });
@@ -101,7 +90,6 @@ export default function DocumentEditorPage() {
         localStorage.removeItem(STORAGE_KEY);
       }
     }
-
     if (!loaded.length) {
       const legacyRaw = localStorage.getItem(LEGACY_STORAGE_KEY);
       if (legacyRaw) {
@@ -113,7 +101,6 @@ export default function DocumentEditorPage() {
         }
       }
     }
-
     if (!loaded.length) loaded = [makeDocument()];
     loaded.sort((a, b) => b.updatedAt - a.updatedAt);
     setDocuments(loaded);
@@ -173,13 +160,15 @@ export default function DocumentEditorPage() {
     setSaved(true);
   };
 
-  const renameDocument = () => {
-    const nextTitle = window.prompt("Document name", title);
+  const renameDocument = (documentId = activeId) => {
+    const current = documents.find((doc) => doc.id === documentId);
+    if (!current) return;
+    const nextTitle = window.prompt("Document name", current.title);
     if (nextTitle === null) return;
     const clean = nextTitle.trim() || "Untitled document";
-    setTitle(clean);
-    const next = documents.map((doc) => doc.id === activeId ? { ...doc, title: clean, updatedAt: Date.now() } : doc);
+    const next = documents.map((doc) => doc.id === documentId ? { ...doc, title: clean, updatedAt: Date.now() } : doc);
     persistDocuments(next);
+    if (documentId === activeId) setTitle(clean);
     setSaved(true);
   };
 
@@ -347,27 +336,7 @@ export default function DocumentEditorPage() {
   return (
     <ToolShell title="Document Editor" description="A lightweight Word-style document editor." category="Writing">
       <div className="document-editor-app flex min-h-0 w-full flex-col">
-        <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
-          <input
-            value={title}
-            onChange={(e) => { setTitle(e.target.value); scheduleSave(); }}
-            onBlur={save}
-            aria-label="Document title"
-            className="min-w-0 flex-1 bg-transparent px-1 py-1 text-lg font-bold outline-none placeholder:text-slate-400"
-            placeholder="Document title"
-          />
-          <div className="flex items-center gap-1 text-xs text-slate-500">
-            <span>{saved ? "Saved" : "Saving…"}</span>
-            <button type="button" onClick={save} className="px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100">Save</button>
-            <button type="button" onClick={renameDocument} className="px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100">Rename</button>
-            <button type="button" onClick={duplicateDocument} className="inline-flex h-8 w-8 items-center justify-center text-slate-700 hover:bg-slate-100" aria-label="Duplicate document" title="Duplicate"><Copy size={16}/></button>
-            <button type="button" onClick={deleteDocument} className="inline-flex h-8 w-8 items-center justify-center text-slate-700 hover:bg-slate-100" aria-label="Delete document" title="Delete"><Trash2 size={16}/></button>
-            <button type="button" onClick={() => window.print()} className="inline-flex h-8 w-8 items-center justify-center text-slate-700 hover:bg-slate-100" aria-label="Print document" title="Print"><Printer size={16}/></button>
-            <button type="button" onClick={exportHtml} className="inline-flex h-8 w-8 items-center justify-center text-slate-700 hover:bg-slate-100" aria-label="Export HTML" title="Export HTML"><FileDown size={16}/></button>
-          </div>
-        </div>
-
-        <div className="mb-2 flex min-h-9 shrink-0 items-end border-b border-slate-200 bg-white print:hidden">
+        <div className="mb-2 flex min-h-10 shrink-0 items-end border-b border-slate-200 bg-white print:hidden">
           <div className="flex min-w-0 flex-1 items-end overflow-x-auto" role="tablist" aria-label="Open documents">
             {documents.map((doc) => (
               <button
@@ -376,22 +345,15 @@ export default function DocumentEditorPage() {
                 role="tab"
                 aria-selected={doc.id === activeId}
                 onClick={() => selectDocument(doc)}
-                title={doc.title}
-                className={`group relative flex h-9 max-w-52 min-w-28 shrink-0 items-center gap-2 border-r border-slate-200 px-3 text-left text-xs transition ${doc.id === activeId ? "bg-white font-semibold text-slate-900" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
+                onDoubleClick={() => renameDocument(doc.id)}
+                title={`${doc.title} — double-click to rename`}
+                className={`group relative flex h-10 max-w-56 min-w-28 shrink-0 items-center gap-2 border-r border-slate-200 px-3 text-left text-xs transition ${doc.id === activeId ? "bg-white font-semibold text-slate-900" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
               >
                 <span className="min-w-0 flex-1 truncate">{doc.title}</span>
                 {doc.id === activeId ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600" /> : null}
               </button>
             ))}
-            <button
-              type="button"
-              onClick={createDocument}
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center text-slate-600 hover:bg-slate-100"
-              aria-label="New document"
-              title="New document"
-            >
-              +
-            </button>
+            <button type="button" onClick={createDocument} className="inline-flex h-10 w-9 shrink-0 items-center justify-center text-lg text-slate-600 hover:bg-slate-100" aria-label="New document" title="New document">+</button>
           </div>
         </div>
 
@@ -428,7 +390,6 @@ export default function DocumentEditorPage() {
             <ToolbarButton label="Insert image" onClick={() => imageInputRef.current?.click()}><ImagePlus size={16}/></ToolbarButton>
             <input ref={imageInputRef} type="file" accept="image/*" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) insertImage(file); e.currentTarget.value = ""; }} />
           </div>
-
           {findOpen ? (
             <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 bg-slate-50 px-2 py-2 text-xs">
               <input autoFocus value={findText} onChange={(e) => setFindText(e.target.value)} placeholder="Find" className="h-8 w-40 bg-white px-2 outline-none ring-1 ring-slate-200 focus:ring-slate-400" aria-label="Find text" />
@@ -443,24 +404,7 @@ export default function DocumentEditorPage() {
 
         <div className="min-h-0 flex-1 overflow-auto bg-slate-100 px-2 py-4 sm:px-4 sm:py-6">
           <article className="mx-auto min-h-[70vh] w-full max-w-[850px] bg-white px-7 py-8 shadow-sm sm:min-h-[1050px] sm:px-16 sm:py-14 print:min-h-0 print:max-w-none print:px-0 print:py-0 print:shadow-none">
-            <div
-              ref={editorRef}
-              contentEditable
-              suppressContentEditableWarning
-              spellCheck
-              className="document-editor min-h-[60vh] text-[15px] leading-7 text-slate-900 outline-none sm:min-h-[950px]"
-              onInput={() => { updateStats(); scheduleSave(); }}
-              onKeyDown={(e) => {
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); }
-                if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") { e.preventDefault(); rememberSelection(); setFindOpen(true); }
-              }}
-              onMouseUp={rememberSelection}
-              onKeyUp={rememberSelection}
-              onBlur={rememberSelection}
-              aria-label="Document editor"
-            >
-              <p><br/></p>
-            </div>
+            <div ref={editorRef} contentEditable suppressContentEditableWarning spellCheck className="document-editor min-h-[60vh] text-[15px] leading-7 text-slate-900 outline-none sm:min-h-[950px]" onInput={() => { updateStats(); scheduleSave(); }} onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") { e.preventDefault(); save(); } if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "f") { e.preventDefault(); rememberSelection(); setFindOpen(true); } }} onMouseUp={rememberSelection} onKeyUp={rememberSelection} onBlur={rememberSelection} aria-label="Document editor"><p><br/></p></div>
           </article>
         </div>
         <div className="mt-2 flex shrink-0 items-center justify-end gap-4 px-1 text-xs text-slate-500 print:hidden"><span>{stats.words} words</span><span>{stats.characters} characters</span><span>{documents.length} document{documents.length === 1 ? "" : "s"}</span></div>
