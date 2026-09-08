@@ -347,7 +347,7 @@ export default function DocumentEditorPage() {
   return (
     <ToolShell title="Document Editor" description="A lightweight Word-style document editor." category="Writing">
       <div className="document-editor-app flex min-h-0 w-full flex-col">
-        <div className="mb-3 flex shrink-0 flex-wrap items-center justify-between gap-2">
+        <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
           <input
             value={title}
             onChange={(e) => { setTitle(e.target.value); scheduleSave(); }}
@@ -359,7 +359,6 @@ export default function DocumentEditorPage() {
           <div className="flex items-center gap-1 text-xs text-slate-500">
             <span>{saved ? "Saved" : "Saving…"}</span>
             <button type="button" onClick={save} className="px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100">Save</button>
-            <button type="button" onClick={createDocument} className="px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100">New</button>
             <button type="button" onClick={renameDocument} className="px-2 py-1 font-semibold text-slate-700 hover:bg-slate-100">Rename</button>
             <button type="button" onClick={duplicateDocument} className="inline-flex h-8 w-8 items-center justify-center text-slate-700 hover:bg-slate-100" aria-label="Duplicate document" title="Duplicate"><Copy size={16}/></button>
             <button type="button" onClick={deleteDocument} className="inline-flex h-8 w-8 items-center justify-center text-slate-700 hover:bg-slate-100" aria-label="Delete document" title="Delete"><Trash2 size={16}/></button>
@@ -368,72 +367,78 @@ export default function DocumentEditorPage() {
           </div>
         </div>
 
-        <div className="mb-3 flex min-h-0 shrink-0 flex-col border-y border-slate-200 bg-white sm:flex-row">
-          <aside className="w-full shrink-0 border-b border-slate-200 bg-slate-50 sm:w-48 sm:border-b-0 sm:border-r">
-            <div className="flex items-center justify-between px-3 py-2">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">Documents</span>
-              <button type="button" onClick={createDocument} className="px-1 text-sm font-bold text-slate-700 hover:bg-slate-200" aria-label="New document">+</button>
-            </div>
-            <div className="flex max-h-32 flex-col overflow-y-auto sm:max-h-72">
-              {documents.map((doc) => (
-                <button
-                  key={doc.id}
-                  type="button"
-                  onClick={() => selectDocument(doc)}
-                  className={`flex items-center justify-between gap-2 px-3 py-2 text-left text-xs hover:bg-slate-200 ${doc.id === activeId ? "bg-white font-semibold text-slate-900" : "text-slate-600"}`}
-                >
-                  <span className="min-w-0 truncate">{doc.title}</span>
-                  {doc.id === activeId ? <span className="h-1.5 w-1.5 shrink-0 bg-blue-600" /> : null}
-                </button>
-              ))}
-            </div>
-          </aside>
-
-          <div className="min-w-0 flex-1">
-            <div className="flex w-full flex-wrap items-center gap-0.5 px-1 py-1 print:hidden">
-              <ToolbarButton label="Undo" onClick={() => command("undo")}><Undo2 size={16}/></ToolbarButton>
-              <ToolbarButton label="Redo" onClick={() => command("redo")}><Redo2 size={16}/></ToolbarButton>
-              <ToolbarButton label="Find and replace" onClick={() => { rememberSelection(); setFindOpen((value) => !value); }}><Search size={16}/></ToolbarButton>
-              <span className="mx-1 h-5 w-px bg-slate-200" />
-              <select aria-label="Text style" defaultValue="p" onMouseDown={rememberSelection} onChange={(e) => formatBlock(e.target.value)} className="h-8 w-28 bg-transparent px-1 text-xs outline-none hover:bg-slate-100"><option value="p">Normal</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Quote</option></select>
-              <select aria-label="Font family" defaultValue="Arial" onMouseDown={rememberSelection} onChange={(e) => command("fontName", e.target.value)} className="h-8 w-24 bg-transparent px-1 text-xs outline-none hover:bg-slate-100"><option>Arial</option><option>Georgia</option><option>Times New Roman</option><option>Verdana</option><option>Courier New</option></select>
-              <select aria-label="Font size" defaultValue="3" onMouseDown={rememberSelection} onChange={(e) => command("fontSize", e.target.value)} className="h-8 w-14 bg-transparent px-1 text-xs outline-none hover:bg-slate-100"><option value="1">10</option><option value="2">12</option><option value="3">14</option><option value="4">18</option><option value="5">24</option><option value="6">32</option><option value="7">48</option></select>
-              <span className="mx-1 h-5 w-px bg-slate-200" />
-              <ToolbarButton label="Bold" onClick={() => command("bold")}><Bold size={16}/></ToolbarButton>
-              <ToolbarButton label="Italic" onClick={() => command("italic")}><Italic size={16}/></ToolbarButton>
-              <ToolbarButton label="Underline" onClick={() => command("underline")}><Underline size={16}/></ToolbarButton>
-              <ToolbarButton label="Strikethrough" onClick={() => command("strikeThrough")}><Strikethrough size={16}/></ToolbarButton>
-              <ToolbarButton label="Superscript" onClick={() => command("superscript")}><Superscript size={16}/></ToolbarButton>
-              <ToolbarButton label="Subscript" onClick={() => command("subscript")}><Subscript size={16}/></ToolbarButton>
-              <label title="Text color" className="inline-flex h-8 w-8 cursor-pointer items-center justify-center text-sm font-bold text-slate-700 hover:bg-slate-100">A<input type="color" className="sr-only" onMouseDown={rememberSelection} onChange={(e) => command("foreColor", e.target.value)}/></label>
-              <label title="Highlight" className="inline-flex h-8 w-8 cursor-pointer items-center justify-center text-slate-700 hover:bg-slate-100"><Highlighter size={16}/><input type="color" defaultValue="#fff59d" className="sr-only" onMouseDown={rememberSelection} onChange={(e) => command("hiliteColor", e.target.value)}/></label>
-              <ToolbarButton label="Clear formatting" onClick={clearFormatting}><MoreHorizontal size={16}/></ToolbarButton>
-              <span className="mx-1 h-5 w-px bg-slate-200" />
-              <ToolbarButton label="Align left" onClick={() => command("justifyLeft")}><AlignLeft size={16}/></ToolbarButton>
-              <ToolbarButton label="Align center" onClick={() => command("justifyCenter")}><AlignCenter size={16}/></ToolbarButton>
-              <ToolbarButton label="Align right" onClick={() => command("justifyRight")}><AlignRight size={16}/></ToolbarButton>
-              <ToolbarButton label="Bulleted list" onClick={() => command("insertUnorderedList")}><List size={16}/></ToolbarButton>
-              <ToolbarButton label="Numbered list" onClick={() => command("insertOrderedList")}><ListOrdered size={16}/></ToolbarButton>
-              <ToolbarButton label="Decrease indent" onClick={() => command("outdent")}><IndentDecrease size={16}/></ToolbarButton>
-              <ToolbarButton label="Increase indent" onClick={() => command("indent")}><IndentIncrease size={16}/></ToolbarButton>
-              <ToolbarButton label="Insert link" onClick={insertLink}><Link2 size={16}/></ToolbarButton>
-              <ToolbarButton label="Insert table" onClick={insertTable}><Table2 size={16}/></ToolbarButton>
-              <ToolbarButton label="Insert page break" onClick={insertPageBreak}><Minus size={16}/></ToolbarButton>
-              <ToolbarButton label="Insert image" onClick={() => imageInputRef.current?.click()}><ImagePlus size={16}/></ToolbarButton>
-              <input ref={imageInputRef} type="file" accept="image/*" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) insertImage(file); e.currentTarget.value = ""; }} />
-            </div>
-
-            {findOpen ? (
-              <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 bg-slate-50 px-2 py-2 text-xs">
-                <input autoFocus value={findText} onChange={(e) => setFindText(e.target.value)} placeholder="Find" className="h-8 w-40 bg-white px-2 outline-none ring-1 ring-slate-200 focus:ring-slate-400" aria-label="Find text" />
-                <input value={replaceText} onChange={(e) => setReplaceText(e.target.value)} placeholder="Replace with" className="h-8 w-40 bg-white px-2 outline-none ring-1 ring-slate-200 focus:ring-slate-400" aria-label="Replace text" />
-                <button type="button" onClick={replaceAll} className="h-8 px-2 font-semibold text-slate-700 hover:bg-slate-200">Replace all</button>
-                <label className="flex items-center gap-1 px-1"><input type="checkbox" checked={matchCase} onChange={(e) => setMatchCase(e.target.checked)} /> Match case</label>
-                <span className="text-slate-500">{findText ? `${matchCount} match${matchCount === 1 ? "" : "es"}` : ""}</span>
-                <button type="button" onClick={() => { setFindOpen(false); setFindText(""); }} className="ml-auto inline-flex h-8 w-8 items-center justify-center hover:bg-slate-200" aria-label="Close find and replace"><X size={16}/></button>
-              </div>
-            ) : null}
+        <div className="mb-2 flex min-h-9 shrink-0 items-end border-b border-slate-200 bg-white print:hidden">
+          <div className="flex min-w-0 flex-1 items-end overflow-x-auto" role="tablist" aria-label="Open documents">
+            {documents.map((doc) => (
+              <button
+                key={doc.id}
+                type="button"
+                role="tab"
+                aria-selected={doc.id === activeId}
+                onClick={() => selectDocument(doc)}
+                title={doc.title}
+                className={`group relative flex h-9 max-w-52 min-w-28 shrink-0 items-center gap-2 border-r border-slate-200 px-3 text-left text-xs transition ${doc.id === activeId ? "bg-white font-semibold text-slate-900" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
+              >
+                <span className="min-w-0 flex-1 truncate">{doc.title}</span>
+                {doc.id === activeId ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-blue-600" /> : null}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={createDocument}
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center text-slate-600 hover:bg-slate-100"
+              aria-label="New document"
+              title="New document"
+            >
+              +
+            </button>
           </div>
+        </div>
+
+        <div className="mb-2 flex min-h-0 shrink-0 flex-col border-y border-slate-200 bg-white">
+          <div className="flex w-full flex-wrap items-center gap-0.5 px-1 py-1 print:hidden">
+            <ToolbarButton label="Undo" onClick={() => command("undo")}><Undo2 size={16}/></ToolbarButton>
+            <ToolbarButton label="Redo" onClick={() => command("redo")}><Redo2 size={16}/></ToolbarButton>
+            <ToolbarButton label="Find and replace" onClick={() => { rememberSelection(); setFindOpen((value) => !value); }}><Search size={16}/></ToolbarButton>
+            <span className="mx-1 h-5 w-px bg-slate-200" />
+            <select aria-label="Text style" defaultValue="p" onMouseDown={rememberSelection} onChange={(e) => formatBlock(e.target.value)} className="h-8 w-28 bg-transparent px-1 text-xs outline-none hover:bg-slate-100"><option value="p">Normal</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="blockquote">Quote</option></select>
+            <select aria-label="Font family" defaultValue="Arial" onMouseDown={rememberSelection} onChange={(e) => command("fontName", e.target.value)} className="h-8 w-24 bg-transparent px-1 text-xs outline-none hover:bg-slate-100"><option>Arial</option><option>Georgia</option><option>Times New Roman</option><option>Verdana</option><option>Courier New</option></select>
+            <select aria-label="Font size" defaultValue="3" onMouseDown={rememberSelection} onChange={(e) => command("fontSize", e.target.value)} className="h-8 w-14 bg-transparent px-1 text-xs outline-none hover:bg-slate-100"><option value="1">10</option><option value="2">12</option><option value="3">14</option><option value="4">18</option><option value="5">24</option><option value="6">32</option><option value="7">48</option></select>
+            <span className="mx-1 h-5 w-px bg-slate-200" />
+            <ToolbarButton label="Bold" onClick={() => command("bold")}><Bold size={16}/></ToolbarButton>
+            <ToolbarButton label="Italic" onClick={() => command("italic")}><Italic size={16}/></ToolbarButton>
+            <ToolbarButton label="Underline" onClick={() => command("underline")}><Underline size={16}/></ToolbarButton>
+            <ToolbarButton label="Strikethrough" onClick={() => command("strikeThrough")}><Strikethrough size={16}/></ToolbarButton>
+            <ToolbarButton label="Superscript" onClick={() => command("superscript")}><Superscript size={16}/></ToolbarButton>
+            <ToolbarButton label="Subscript" onClick={() => command("subscript")}><Subscript size={16}/></ToolbarButton>
+            <label title="Text color" className="inline-flex h-8 w-8 cursor-pointer items-center justify-center text-sm font-bold text-slate-700 hover:bg-slate-100">A<input type="color" className="sr-only" onMouseDown={rememberSelection} onChange={(e) => command("foreColor", e.target.value)}/></label>
+            <label title="Highlight" className="inline-flex h-8 w-8 cursor-pointer items-center justify-center text-slate-700 hover:bg-slate-100"><Highlighter size={16}/><input type="color" defaultValue="#fff59d" className="sr-only" onMouseDown={rememberSelection} onChange={(e) => command("hiliteColor", e.target.value)}/></label>
+            <ToolbarButton label="Clear formatting" onClick={clearFormatting}><MoreHorizontal size={16}/></ToolbarButton>
+            <span className="mx-1 h-5 w-px bg-slate-200" />
+            <ToolbarButton label="Align left" onClick={() => command("justifyLeft")}><AlignLeft size={16}/></ToolbarButton>
+            <ToolbarButton label="Align center" onClick={() => command("justifyCenter")}><AlignCenter size={16}/></ToolbarButton>
+            <ToolbarButton label="Align right" onClick={() => command("justifyRight")}><AlignRight size={16}/></ToolbarButton>
+            <ToolbarButton label="Bulleted list" onClick={() => command("insertUnorderedList")}><List size={16}/></ToolbarButton>
+            <ToolbarButton label="Numbered list" onClick={() => command("insertOrderedList")}><ListOrdered size={16}/></ToolbarButton>
+            <ToolbarButton label="Decrease indent" onClick={() => command("outdent")}><IndentDecrease size={16}/></ToolbarButton>
+            <ToolbarButton label="Increase indent" onClick={() => command("indent")}><IndentIncrease size={16}/></ToolbarButton>
+            <ToolbarButton label="Insert link" onClick={insertLink}><Link2 size={16}/></ToolbarButton>
+            <ToolbarButton label="Insert table" onClick={insertTable}><Table2 size={16}/></ToolbarButton>
+            <ToolbarButton label="Insert page break" onClick={insertPageBreak}><Minus size={16}/></ToolbarButton>
+            <ToolbarButton label="Insert image" onClick={() => imageInputRef.current?.click()}><ImagePlus size={16}/></ToolbarButton>
+            <input ref={imageInputRef} type="file" accept="image/*" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) insertImage(file); e.currentTarget.value = ""; }} />
+          </div>
+
+          {findOpen ? (
+            <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 bg-slate-50 px-2 py-2 text-xs">
+              <input autoFocus value={findText} onChange={(e) => setFindText(e.target.value)} placeholder="Find" className="h-8 w-40 bg-white px-2 outline-none ring-1 ring-slate-200 focus:ring-slate-400" aria-label="Find text" />
+              <input value={replaceText} onChange={(e) => setReplaceText(e.target.value)} placeholder="Replace with" className="h-8 w-40 bg-white px-2 outline-none ring-1 ring-slate-200 focus:ring-slate-400" aria-label="Replace text" />
+              <button type="button" onClick={replaceAll} className="h-8 px-2 font-semibold text-slate-700 hover:bg-slate-200">Replace all</button>
+              <label className="flex items-center gap-1 px-1"><input type="checkbox" checked={matchCase} onChange={(e) => setMatchCase(e.target.checked)} /> Match case</label>
+              <span className="text-slate-500">{findText ? `${matchCount} match${matchCount === 1 ? "" : "es"}` : ""}</span>
+              <button type="button" onClick={() => { setFindOpen(false); setFindText(""); }} className="ml-auto inline-flex h-8 w-8 items-center justify-center hover:bg-slate-200" aria-label="Close find and replace"><X size={16}/></button>
+            </div>
+          ) : null}
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto bg-slate-100 px-2 py-4 sm:px-4 sm:py-6">
