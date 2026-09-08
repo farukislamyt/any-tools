@@ -128,8 +128,6 @@ export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions)
     case "hex":
       return 3 * Math.sqrt(3) * d.acrossCorners! ** 2 / 8;
     case "octagon":
-      // Regular octagon with across-flats dimension F:
-      // A = 2(√2 − 1)F².
       return 2 * (Math.sqrt(2) - 1) * d.acrossFlats! ** 2;
     case "pipe": {
       const od = d.outerDiameter!;
