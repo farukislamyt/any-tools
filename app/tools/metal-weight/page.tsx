@@ -147,17 +147,27 @@ export default function MetalWeightPage() {
   return <ToolShell title="Metal Weight Calculator" description="Calculate steel and metal weight from custom dimensions, material density and shape-specific formulas." category="Engineering">
     <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
       <section className="border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
-        <div className="mb-3 flex items-start justify-between gap-3"><div><h2 className="text-base font-semibold text-slate-950">Enter your values</h2><p className="mt-0.5 text-xs text-slate-500">Choose a material and shape, then enter the required dimensions.</p></div><button type="button" onClick={clear} className="text-xs font-medium text-slate-500 hover:text-slate-950">Clear</button></div>
-        <div className="grid gap-2.5 sm:grid-cols-2">
+        <div className="mb-3 flex items-start justify-between gap-3"><div><h2 className="text-base font-semibold text-slate-950">Enter your values</h2><p className="mt-0.5 text-xs text-slate-500">Start with the shape diagram, then choose material and shape, quantity, and dimensions.</p></div><button type="button" onClick={clear} className="text-xs font-medium text-slate-500 hover:text-slate-950">Clear</button></div>
+
+        <ShapeDiagram shape={shape}/>
+
+        <div className="mb-3 grid gap-2.5 sm:grid-cols-2">
           <label className="text-xs font-medium text-slate-700">Material<select value={material} onChange={e => { setMaterial(e.target.value as Material); setCalculatedResult(null); setError(""); }} className="mt-1 h-9 w-full border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100">{Object.entries(materials).map(([name]) => <option key={name} value={name}>{name}{name === "Steel" ? " (default)" : ""}</option>)}</select></label>
           <label className="text-xs font-medium text-slate-700">Shape<select value={shape} onChange={e => selectShape(e.target.value as MetalWeightShape)} className="mt-1 h-9 w-full border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100">{shapeOptions.map(option => <option key={option.value} value={option.value}>{option.label === "Sheet / plate" ? "Sheet" : option.label}</option>)}</select></label>
         </div>
-        <ShapeDiagram shape={shape}/>
-        <div className="grid gap-2.5 sm:grid-cols-2">
-          <label className="text-xs font-medium text-slate-700">Quantity<input aria-label="Quantity" inputMode="numeric" min="1" step="1" value={customQuantity} onChange={e => { setCustomQuantity(e.target.value); setCalculatedResult(null); setError(""); }} className="mt-1 h-9 w-full border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100"/></label>
-          {definition.fields.map(field => <DimensionInput key={field.key} label={field.label} state={dimensions[field.key]} onChange={next => updateDimension(field.key, next)}/>)}
-          {shape !== "plate" && <DimensionInput label="Length" state={customLength} onChange={next => { setCustomLength(next); setCalculatedResult(null); setError(""); }}/>} 
+
+        <div className="mb-3">
+          <label className="text-xs font-medium text-slate-700">Quantity<input aria-label="Quantity" inputMode="numeric" min="1" step="1" value={customQuantity} onChange={e => { setCustomQuantity(e.target.value); setCalculatedResult(null); setError(""); }} className="mt-1 h-9 w-full border border-slate-200 bg-white px-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-2 focus:ring-slate-100 sm:max-w-[220px]"/></label>
         </div>
+
+        <div>
+          <div className="mb-2"><p className="text-xs font-semibold text-slate-900">Dimensions</p><p className="mt-0.5 text-[11px] text-slate-500">Enter the section dimensions and length. Units can be mixed.</p></div>
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {definition.fields.map(field => <DimensionInput key={field.key} label={field.label} state={dimensions[field.key]} onChange={next => updateDimension(field.key, next)}/>)}
+            {shape !== "plate" && <DimensionInput label="Length" state={customLength} onChange={next => { setCustomLength(next); setCalculatedResult(null); setError(""); }}/>} 
+          </div>
+        </div>
+
         <div className="mt-3 border-t border-slate-200 pt-3"><p className="text-xs font-semibold text-slate-900">Formula</p><p className="mt-0.5 text-xs text-slate-600">{formulaFor(shape)}</p><p className="mt-0.5 text-[11px] text-slate-500">Weight = cross-sectional area × length × density × quantity.</p>{(shape === "equal-angle" || shape === "angle") && <p className="mt-1.5 text-[11px] text-slate-500">Theoretical sharp-corner geometry; rolled sections can differ because of fillets and manufacturing tolerances.</p>}{(shape === "channel" || shape === "i-beam" || shape === "h-beam" || shape === "tee" || shape === "z") && <p className="mt-1.5 text-[11px] text-slate-500">Custom structural-section geometry is an idealized rectangular model and does not include rolled-profile fillets or slopes.</p>}</div>
         {error && <p role="alert" className="mt-3 border border-red-200 bg-red-50 px-2.5 py-2 text-xs text-red-700">{error}</p>}
         <div className="mt-3 flex flex-wrap gap-1.5"><button type="button" onClick={calculate} className="min-h-9 bg-slate-950 px-5 text-xs font-semibold text-white hover:bg-slate-800">Calculate</button><button type="button" onClick={clear} className="min-h-9 border border-slate-300 bg-white px-5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Clear</button><button type="button" onClick={reset} className="min-h-9 px-2.5 text-xs font-medium text-slate-500 hover:text-slate-950">Reset</button></div>
