@@ -17,14 +17,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .container { width: min(1120px, calc(100% - 32px)); margin-inline: auto; }
 ::selection { background: #dbeafe; color: #172554; }
 
-/* Shared viewport-fit workspace */
 .tool-app { min-height: 100dvh; }
 .tool-main { min-height: 0; }
 .tool-layout { min-height: 0; }
 .tool-workspace { scrollbar-gutter: stable; }
 .tool-workspace > * { min-width: 0; }
 
-/* Compact metal-weight workspace */
 section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child { margin-bottom: 10px; }
 section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child h2,
 section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child p { display: none; }
@@ -52,7 +50,10 @@ section[data-tool="Metal Weight Calculator"] .min-h-11 { min-height: 2.5rem; }
 
 @media print {
   body { background: white; }
-  .document-editor { min-height: 0 !important; }
+  body * { visibility: hidden !important; }
+  .document-print-area, .document-print-area * { visibility: visible !important; }
+  .document-print-area { position: absolute !important; inset: 0 !important; overflow: visible !important; background: white !important; padding: 0 !important; }
+  .document-editor { min-height: 0 !important; max-width: none !important; width: 100% !important; box-shadow: none !important; padding: 0 !important; }
   .document-page-break { border: 0; height: 0; page-break-after: always; }
   .document-page-break span { display: none; }
   .editor-table td { border-color: #777; }
