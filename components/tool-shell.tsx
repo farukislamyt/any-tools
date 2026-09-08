@@ -58,7 +58,7 @@ export function ToolShell({
           <aside id="tool-sidebar" aria-label="Tools sidebar" className="hidden min-h-0 w-fit min-w-[11rem] max-w-[18rem] shrink-0 overflow-y-auto border-r border-slate-200 pr-4 lg:block">
             <div className="sticky top-0"><ToolList currentTitle={title} /></div>
           </aside>
-          <section className="tool-workspace min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
+          <section data-tool={title} className="tool-workspace min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain">
             {children}
           </section>
         </div>
