@@ -26,7 +26,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child { margin-bottom: 10px; }
 section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child h2,
 section[data-tool="Metal Weight Calculator"] > div > section:first-child > div:first-child p { display: none; }
-section[data-tool="Metal Weight Calculator"] .my-4 { display: none; }
+/* Keep the shape diagram visible; it is the primary visual guide for dimensions. */
+section[data-tool="Metal Weight Calculator"] .my-4 { display: flex; }
 section[data-tool="Metal Weight Calculator"] .gap-4 { gap: 0.625rem; }
 section[data-tool="Metal Weight Calculator"] .mt-1\.5 { margin-top: 0.25rem; }
 section[data-tool="Metal Weight Calculator"] input, section[data-tool="Metal Weight Calculator"] select { height: 2.5rem; }
