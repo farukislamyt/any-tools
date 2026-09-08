@@ -48,53 +48,129 @@ function positive(...values: number[]) {
 }
 
 export function isValidMetalGeometry(shape: MetalWeightShape, d: MetalDimensions): boolean {
-  const a = d.diameter ?? d.side ?? d.width ?? d.sideA ?? d.outerDiameter ?? d.depth ?? 0;
-  const b = d.height ?? d.sideB ?? 0;
-  const t = d.wallThickness ?? 0;
-  const f = d.flangeWidth ?? 0;
-  const ft = d.flangeThickness ?? 0;
-  const w = d.webThickness ?? 0;
-
   switch (shape) {
-    case "round": case "wire": case "square": return positive(a);
-    case "rectangle": case "flat": return positive(a, b);
-    case "plate": return positive(d.width ?? 0, d.length ?? 0, d.height ?? 0);
-    case "hex": case "octagon": return positive(a);
-    case "pipe": return positive(a, t) && 2 * t < a;
-    case "tube": return positive(a, b, t) && 2 * t < a && 2 * t < b;
-    case "equal-angle": return positive(a, t) && t < a;
-    case "angle": return positive(a, b, t) && t < Math.min(a, b);
-    case "channel": case "i-beam": case "h-beam": case "z":
-      return positive(a, f, ft, w) && 2 * ft < a && w <= f;
-    case "tee": return positive(a, f, ft, w) && ft < a && w <= f;
+    case "round":
+    case "wire":
+      return positive(d.diameter ?? 0);
+    case "square":
+      return positive(d.side ?? 0);
+    case "rectangle":
+    case "flat":
+      return positive(d.width ?? 0, d.height ?? 0);
+    case "plate":
+      return positive(d.width ?? 0, d.length ?? 0, d.height ?? 0);
+    case "hex":
+      return positive(d.acrossCorners ?? 0);
+    case "octagon":
+      return positive(d.acrossFlats ?? 0);
+    case "pipe": {
+      const od = d.outerDiameter ?? 0;
+      const wall = d.wallThickness ?? 0;
+      return positive(od, wall) && 2 * wall < od;
+    }
+    case "tube": {
+      const width = d.width ?? 0;
+      const height = d.height ?? 0;
+      const wall = d.wallThickness ?? 0;
+      return positive(width, height, wall) && 2 * wall < width && 2 * wall < height;
+    }
+    case "equal-angle": {
+      const side = d.sideA ?? 0;
+      const wall = d.wallThickness ?? 0;
+      return positive(side, wall) && wall < side;
+    }
+    case "angle": {
+      const sideA = d.sideA ?? 0;
+      const sideB = d.sideB ?? 0;
+      const wall = d.wallThickness ?? 0;
+      return positive(sideA, sideB, wall) && wall < Math.min(sideA, sideB);
+    }
+    case "channel":
+    case "i-beam":
+    case "h-beam":
+    case "z": {
+      const depth = d.depth ?? 0;
+      const flangeWidth = d.flangeWidth ?? 0;
+      const flangeThickness = d.flangeThickness ?? 0;
+      const webThickness = d.webThickness ?? 0;
+      return positive(depth, flangeWidth, flangeThickness, webThickness)
+        && 2 * flangeThickness < depth
+        && webThickness <= flangeWidth;
+    }
+    case "tee": {
+      const depth = d.depth ?? 0;
+      const flangeWidth = d.flangeWidth ?? 0;
+      const flangeThickness = d.flangeThickness ?? 0;
+      const webThickness = d.webThickness ?? 0;
+      return positive(depth, flangeWidth, flangeThickness, webThickness)
+        && flangeThickness < depth
+        && webThickness <= flangeWidth;
+    }
   }
 }
 
 export function crossSectionAreaMm2(shape: MetalWeightShape, d: MetalDimensions): number {
-  if (shape === "plate") {
-    return isValidMetalGeometry(shape, d) ? (d.width ?? 0) * (d.height ?? 0) : 0;
-  }
   if (!isValidMetalGeometry(shape, d)) return 0;
 
-  const a = d.diameter ?? d.side ?? d.width ?? d.sideA ?? d.outerDiameter ?? d.depth ?? 0;
-  const b = d.height ?? d.sideB ?? 0;
-  const t = d.wallThickness ?? 0;
-  const f = d.flangeWidth ?? 0;
-  const ft = d.flangeThickness ?? 0;
-  const w = d.webThickness ?? 0;
-
   switch (shape) {
-    case "round": case "wire": return Math.PI * (a / 2) ** 2;
-    case "square": return a ** 2;
-    case "rectangle": case "flat": return a * b;
-    case "hex": return (3 * Math.sqrt(3) * a ** 2) / 8;
-    case "octagon": return a ** 2 / (2 * (1 + Math.sqrt(2)));
-    case "pipe": return Math.PI * ((a / 2) ** 2 - ((a - 2 * t) / 2) ** 2);
-    case "tube": return a * b - (a - 2 * t) * (b - 2 * t);
-    case "equal-angle": return t * (2 * a - t);
-    case "angle": return t * (a + b - t);
-    case "channel": case "i-beam": case "h-beam": case "z": return 2 * f * ft + (a - 2 * ft) * w;
-    case "tee": return f * ft + (a - ft) * w;
+    case "round":
+    case "wire": {
+      const diameter = d.diameter!;
+      return Math.PI * diameter ** 2 / 4;
+    }
+    case "square":
+      return d.side! ** 2;
+    case "rectangle":
+    case "flat":
+      return d.width! * d.height!;
+    case "plate":
+      return d.width! * d.height!;
+    case "hex":
+      return 3 * Math.sqrt(3) * d.acrossCorners! ** 2 / 8;
+    case "octagon":
+      // Regular octagon with across-flats dimension F:
+      // A = 2(√2 − 1)F².
+      return 2 * (Math.sqrt(2) - 1) * d.acrossFlats! ** 2;
+    case "pipe": {
+      const od = d.outerDiameter!;
+      const wall = d.wallThickness!;
+      const id = od - 2 * wall;
+      return Math.PI * (od ** 2 - id ** 2) / 4;
+    }
+    case "tube": {
+      const width = d.width!;
+      const height = d.height!;
+      const wall = d.wallThickness!;
+      return width * height - (width - 2 * wall) * (height - 2 * wall);
+    }
+    case "equal-angle": {
+      const side = d.sideA!;
+      const wall = d.wallThickness!;
+      return wall * (2 * side - wall);
+    }
+    case "angle": {
+      const sideA = d.sideA!;
+      const sideB = d.sideB!;
+      const wall = d.wallThickness!;
+      return wall * (sideA + sideB - wall);
+    }
+    case "channel":
+    case "i-beam":
+    case "h-beam":
+    case "z": {
+      const depth = d.depth!;
+      const flangeWidth = d.flangeWidth!;
+      const flangeThickness = d.flangeThickness!;
+      const webThickness = d.webThickness!;
+      return 2 * flangeWidth * flangeThickness + (depth - 2 * flangeThickness) * webThickness;
+    }
+    case "tee": {
+      const depth = d.depth!;
+      const flangeWidth = d.flangeWidth!;
+      const flangeThickness = d.flangeThickness!;
+      const webThickness = d.webThickness!;
+      return flangeWidth * flangeThickness + (depth - flangeThickness) * webThickness;
+    }
   }
 }
 
